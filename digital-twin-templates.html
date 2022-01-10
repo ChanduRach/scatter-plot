@@ -1,0 +1,1145 @@
+<template $name="digital-twin"
+  mode="edit"
+  data:urljson="dt-data.json"
+  frame:number="0"
+  frame-rate:number="1000"
+>
+  <style>
+    digital-twin,
+    digital-twin > svg {
+      width: 100%;
+      height: 100%;
+    }
+    digital-twin {
+      position: relative;
+    }
+    digital-twin > svg {
+      position: absolute;
+      pointer-events: none;
+    }
+    digital-twin[mode="edit"] slider-el * {
+      pointer-events: none;
+    }
+    digital-twin[mode="publish"]{
+      position: absolute;
+    }
+    digital-twin > main > span {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1px;
+      height: 1px;
+      /* display: none; */
+      background: magenta;
+      transform-origin: 0 0;
+      opacity: 0.5;
+      z-index: 100000;
+      pointer-events: none;
+      transition: transform 100ms ease-in-out;
+    }
+    digital-twin[mode="edit"] .selected {
+      box-shadow: 0 0 2px 2px hsl(210, 81%, 15%) inset;
+    }
+    digital-twin > svg > path {
+      stroke: black;
+      stroke-width: 1px;
+      fill: none;
+    }
+    digital-twin > main {
+      width: 100%;
+      height: 100%;
+      z-index: 1000;
+    }
+    digital-twin > footer {
+      position: absolute;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    digital-twin > footer > input {
+      flex: 1;
+    }
+
+    digital-twin [data-status = "danger"] {
+      background: coral !important;
+    }
+
+    digital-twin [data-status = "success"] {
+      background: hsl(102, 81%, 79%) !important;
+    }
+
+    digital-twin [data-status = "warning"] {
+      background: hsl(64, 97%, 71%) !important;
+    }
+
+    digital-twin[mode="publish"] block-container span[data-pos] {
+      visibility: hidden;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/jstat@1.9.2/dist/jstat.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/formulajs/formulajs@2.9.2/dist/formula.min.js"></script>
+  <% if(!data) return %>
+  <svg></svg>
+  <main>
+    <slot></slot>
+    <span></span>
+  </main>
+  <footer>
+    <datalist id="keys">
+      <% var isArray = Array.isArray(data) %>
+      <% var dict = isArray ? data[0] : data %>
+      <% Object.keys(dict).forEach(key => { %>
+        <option value="@<%- key %>"><%= key %></option>
+      <% }) %>
+    </datalist>
+    <% if(isArray) { %>
+      <% if(frameRate > 0) { %>
+      <button onclick="uifactory.digitalTwin.pause(event)"><i class="fas fa-pause"></i></button>
+      <% } else { %>
+      <button onclick="uifactory.digitalTwin.play(event)"><i class="fas fa-play"></i></button>
+      <% } %>
+      <input onchange="uifactory.digitalTwin.scrub(event)" type="range" min="0" max="<%- data.length - 1 %>" value="<%- frame %>" />
+    <% } %>
+  </footer>
+  <script>
+    uifactory.digitalTwin = {
+      isHighlighted: false,
+      hDim: {
+        x: 0, y: 0, width: 0, height: 0, opacity: 0.5
+      },
+      highlight() {
+        if(!uifactory.digitalTwin.isHighlighted) return
+        requestAnimationFrame(uifactory.digitalTwin.highlight)
+        const highlightEl = document.querySelector('digital-twin > main > span')
+        const hDim = uifactory.digitalTwin.hDim
+        highlightEl.style.opacity = hDim.opacity
+        highlightEl.style.transform = `
+        translate(${hDim.x}px, ${hDim.y}px)
+        scale(${hDim.width}, ${hDim.height})
+        `
+      },
+      startPos: {
+        x: 0, y:0
+      },
+      target: null,
+      insertBefore: null,
+      paths: [],
+      isMoving: false,
+      currPath: {
+        source: '', target: '',
+        from: '', to: {
+          x: null, y: null
+        }
+      },
+      t: 0,
+      NS: 'http://www.w3.org/2000/svg',
+      defs: `
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7"
+          refX="10" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" />
+          </marker>
+        </defs>
+      `,
+      pause(e) {
+        const dt = e.target.closest('digital-twin')
+        dt.dataset.frameRate = dt.frameRate
+        dt.frameRate = 0
+      },
+      play(e) {
+        const dt = e.target.closest('digital-twin')
+        dt.frameRate = dt.dataset.frameRate
+      },
+      scrub(e) {
+        const dt = e.target.closest('digital-twin')
+        dt.frame = e.target.value
+      },
+      drawPath(path) {
+        const canvas = document.querySelector('digital-twin > svg')
+        if(!canvas) return
+        const main = document.querySelector('digital-twin > main')
+        const cBCR = canvas.getBoundingClientRect()
+        const from = main.querySelector(path.from)
+        if(!from) return
+        const fBCR = from.getBoundingClientRect()
+        const dir = from.dataset.pos == 'e' ? 1 : 1
+        const start = {
+          x: fBCR.left + dir * fBCR.width * 0.5 - cBCR.x,
+          y: fBCR.top + fBCR.height * 0.5 - cBCR.y
+        }
+        // if(node.isDrawing) return
+        let end
+        if(typeof path.to === 'object') {
+          end = Object.assign({}, path.to)
+          end.x -= cBCR.x
+          end.y -= cBCR.y
+        } else {
+          const to = main.querySelector(path.to)
+          if(!to) return
+          const tBCR = to.getBoundingClientRect()
+          const dir = to.dataset.pos == 'e' ? 1 : 1
+          end = {
+            x: tBCR.left + dir * tBCR.width * 0.5 - cBCR.x,
+            y: tBCR.top + tBCR.height * 0.5 - cBCR.y
+          }
+        }
+        const middle = {
+          x: (start.x + end.x) * 0.5,
+          y: (start.y + end.y) * 0.5
+        }
+        const d = `M ${start.x},${start.y}
+                L ${middle.x},${start.y}
+                L ${middle.x},${end.y}
+                L ${end.x},${end.y}`
+        const pathEl = document.createElementNS(uifactory.digitalTwin.NS, 'path')
+        pathEl.setAttribute('d', d)
+        pathEl.setAttribute('data-source', path.source)
+        pathEl.setAttribute('data-target', path.target)
+        pathEl.setAttribute('marker-end', 'url(#arrowhead)')
+        canvas.appendChild(pathEl)
+      },
+      animate() {
+        const now = Date.now()
+        const dt = document.querySelector('digital-twin')
+        if(!dt) return
+        function updateBlocks() {
+          dt.querySelectorAll('[draggable="true"]').forEach(block => block.update())
+        }
+        if((dt.frameRate > 0) && (now - uifactory.digitalTwin.t > dt.frameRate)) {
+          if(dt.mode === 'publish') {
+            requestAnimationFrame(uifactory.digitalTwin.animate)
+          }
+          uifactory.digitalTwin.t = now
+          const length = dt.data ? dt.data.length : 1
+          dt.update({frame: (dt.frame + 1) % length}, {render: false, attr: false})
+          if(dt.querySelector('digital-twin > footer > input')) {
+            dt.querySelector('digital-twin > footer > input').value = dt.frame
+          }
+          updateBlocks()
+        } else if(dt.frame > 0) {
+          updateBlocks()
+        }
+      },
+      tick() {
+        requestAnimationFrame(uifactory.digitalTwin.tick)
+        const canvas = document.querySelector('digital-twin > svg')
+        if(canvas) {
+          canvas.innerHTML = uifactory.digitalTwin.defs
+        }
+        uifactory.digitalTwin.paths.forEach(p => uifactory.digitalTwin.drawPath(p))
+        if(uifactory.digitalTwin.currPath.from.length > 0 && uifactory.digitalTwin.currPath.to.x !== null) {
+          uifactory.digitalTwin.drawPath(uifactory.digitalTwin.currPath)
+        }
+        uifactory.digitalTwin.animate()
+      },
+      replaceRefs(value) {
+        const dt = document.querySelector('digital-twin');
+        if(!dt || !('data' in dt)) return value
+        const vals = value.match(/@\w*/g) || []
+        vals.forEach(val => {
+          const v = dt.data[dt.frame][val.substring(1)]
+          value = value.replace(val, typeof v === 'number' ? v.toFixed(2) : v)
+        })
+        const functionCalls = [...new Set([...value.matchAll(/([A-Z0-9_]+)(?=\()/g)].map(v => v[0]))]
+        const formulas = Object.keys(formulajs)
+        if(functionCalls.length > 0) {
+          functionCalls.forEach(fn => {
+            if(formulas.indexOf(fn) > -1) {
+              value = value.replaceAll(new RegExp(`(${fn}+)(?=\())`, "g"), `formulajs.${fn}`)
+            }
+          })
+        }
+        return vals.length > 0 || functionCalls.length > 0 ? eval(value) : value
+      }
+    }
+  </script>
+  <script ondragstart>
+    const dt = e.currentTarget
+    if(dt.mode === 'publish') return
+    if(!e.target.matches('[draggable="true"]')) {
+      e.preventDefault()
+      return
+    }
+    e.dataTransfer.setData("text/html", e.target.outerHTML);
+    e.dataTransfer.dropEffect = "move"
+    uifactory.digitalTwin.target = e.target
+    uifactory.digitalTwin.isHighlighted = true
+    uifactory.digitalTwin.highlight()
+  </script>
+  <script ondragover>
+    const dt = e.currentTarget
+    if(dt.mode === 'publish') return
+    e.preventDefault()
+    if(!uifactory.digitalTwin.isHighlighted) return
+    uifactory.digitalTwin.hDim.opacity = 0.5
+    const mbcr = e.currentTarget.getBoundingClientRect()
+    if(e.target.matches('main')) {
+      uifactory.digitalTwin.hDim.x = 0
+      uifactory.digitalTwin.hDim.y = 0
+      uifactory.digitalTwin.hDim.width = mbcr.width
+      uifactory.digitalTwin.hDim.height = mbcr.height
+    } else if(e.target.matches('main > block-container')) {
+      let cbcr
+      for(const el of e.target.querySelectorAll('block-row')) {
+        cbcr = el.getBoundingClientRect()
+        if(e.pageY < cbcr.top) {
+          uifactory.digitalTwin.insertBefore = el
+          uifactory.digitalTwin.hDim.x = cbcr.left - mbcr.left
+          uifactory.digitalTwin.hDim.y = cbcr.top - 16 - mbcr.top
+          uifactory.digitalTwin.hDim.width = cbcr.width
+          uifactory.digitalTwin.hDim.height = 16
+          break
+        }
+      }
+      if(e.pageY > cbcr.bottom) {
+        uifactory.digitalTwin.insertBefore = null
+        uifactory.digitalTwin.hDim.x = cbcr.left - mbcr.left
+        uifactory.digitalTwin.hDim.y = cbcr.bottom - mbcr.top
+        uifactory.digitalTwin.hDim.width = cbcr.width
+        uifactory.digitalTwin.hDim.height = 16
+      }
+    } else if(e.target.matches('main > block-container > block-row')) {
+      let cbcr
+      for(const el of e.target.children) {
+        cbcr = el.getBoundingClientRect()
+        if(e.pageX < cbcr.left) {
+          uifactory.digitalTwin.insertBefore = el
+          uifactory.digitalTwin.hDim.x = cbcr.left - 16 - mbcr.left
+          uifactory.digitalTwin.hDim.y = cbcr.top - mbcr.top
+          uifactory.digitalTwin.hDim.width = 16
+          uifactory.digitalTwin.hDim.height = cbcr.height
+          break
+        }
+      }
+      if(e.pageX > cbcr.right) {
+        uifactory.digitalTwin.insertBefore = null
+        uifactory.digitalTwin.hDim.x = cbcr.right - mbcr.left
+        uifactory.digitalTwin.hDim.y = cbcr.top - mbcr.top
+        uifactory.digitalTwin.hDim.width = 16
+        uifactory.digitalTwin.hDim.height = cbcr.height
+      }
+    } else {
+      uifactory.digitalTwin.hDim.opacity = 0
+      uifactory.digitalTwin.highlight()
+    }
+  </script>
+  <script ondrop>
+    const dt = e.currentTarget
+    if(dt.mode === 'publish') return
+    e.preventDefault()
+    if(e.target.matches('main')) {
+      const mbcr = e.target.getBoundingClientRect()
+      const container = document.createElement('block-container')
+      container.setAttribute('id', `block_${Date.now()}_${Math.round(Math.random() * 1e3)}`)
+      const row = document.createElement('block-row')
+      container.appendChild(row)
+      row.innerHTML = e.dataTransfer.getData('text/html')
+      container.style.setProperty('--currX', e.pageX - mbcr.left - uifactory.digitalTwin.startPos.x)
+      container.style.setProperty('--currY', e.pageY - mbcr.top - uifactory.digitalTwin.startPos.y)
+      // const bbox = document.createElement('bounding-box')
+      // container.appendChild(bbox)
+      e.target.appendChild(container)
+      // dt.$contents.appendChild(container)
+      // main.querySelector('[draggable="true"]').removeAttribute('draggable')
+    } else if(e.target.matches('main > block-container, main > block-container > block-row')) {
+      const dragged = new DOMParser().parseFromString(e.dataTransfer.getData('text/html'), 'text/html').body.firstChild
+      let el = dragged
+      if(e.target.matches('main > block-container')) {
+        el = document.createElement('block-row')
+        el.appendChild(dragged)
+      }
+      if(uifactory.digitalTwin.insertBefore) {
+        e.target.insertBefore(el, uifactory.digitalTwin.insertBefore)
+      } else {
+        e.target.appendChild(el)
+      }
+    }
+    if(uifactory.digitalTwin.target && e.target.matches('main, main > block-container, main > block-container > block-row')) {
+      if(uifactory.digitalTwin.target.parentElement.children.length === 1) {
+        uifactory.digitalTwin.paths = uifactory.digitalTwin.paths.filter(p => !(uifactory.digitalTwin.target.parentElement.matches(p.source) || uifactory.digitalTwin.target.parentElement.matches(p.target)))
+        uifactory.digitalTwin.target.parentElement.parentElement.removeChild(uifactory.digitalTwin.target.parentElement)
+      } else {
+        uifactory.digitalTwin.paths = uifactory.digitalTwin.paths.filter(p => !(uifactory.digitalTwin.target.matches(p.source) || uifactory.digitalTwin.target.matches(p.target)))
+        uifactory.digitalTwin.target.parentElement.removeChild(uifactory.digitalTwin.target)
+      }
+      uifactory.digitalTwin.target = null
+    }
+    uifactory.digitalTwin.startPos.x = 0
+    uifactory.digitalTwin.startPos.y = 0
+    uifactory.digitalTwin.hDim.x = 0
+    uifactory.digitalTwin.hDim.y = 0
+    uifactory.digitalTwin.hDim.width = 0
+    uifactory.digitalTwin.hDim.height = 0
+    uifactory.digitalTwin.highlight()
+    uifactory.digitalTwin.isHighlighted = false
+  </script>
+  <script onpointerdown>
+    const dt = e.currentTarget
+    if(dt.mode === 'publish') return
+    if(e.target.matches('main > block-container > span')) {
+      uifactory.digitalTwin.currPath.source = `#${e.target.closest('block-container').id}`
+      uifactory.digitalTwin.currPath.from = `#${e.target.closest('block-container').id} > span[data-pos="${e.target.dataset.pos}"]`
+      uifactory.digitalTwin.currPath.to.x = e.clientX
+      uifactory.digitalTwin.currPath.to.y = e.clientY
+      return
+    }
+    let selectionTarget = e.target
+    if(e.target.matches('main > block-container > block-row')) {
+      selectionTarget = e.target.closest('block-container')
+    }
+    const selection = document.querySelector('.selected')
+    if(selectionTarget !== selection) {
+      if(selection) {
+        selection.classList.remove('selected')
+      }
+      if(selectionTarget.matches('main > block-container, [draggable="true"]')) {
+        selectionTarget.classList.add('selected')
+        document.querySelector('properties-panel').setAttribute('target-selector', `#${selectionTarget.id}`)
+      } else {
+        document.querySelector('properties-panel').setAttribute('target-selector', 'digital-twin')
+      }
+    }
+
+    if(e.target.matches('[draggable="true"]')) return
+    uifactory.digitalTwin.isMoving = true
+    uifactory.digitalTwin.startPos.x = e.pageX
+    uifactory.digitalTwin.startPos.y = e.pageY
+    if(e.target.matches('main > block-container > block-row')) {
+      uifactory.digitalTwin.target = e.target.closest('block-container')
+    } else {
+      uifactory.digitalTwin.target = e.target
+    }
+  </script>
+  <script>
+    window.addEventListener('pointermove', e => {
+      const dt = document.querySelector('digital-twin')
+      if(!dt) return
+      if(dt.mode === 'publish') return
+      if (!uifactory.digitalTwin.isMoving) {
+        if(uifactory.digitalTwin.currPath.from.length > 0) {
+          uifactory.digitalTwin.currPath.to.x = e.clientX
+          uifactory.digitalTwin.currPath.to.y = e.clientY
+        }
+        return
+      }
+      uifactory.digitalTwin.target.style.setProperty('--deltaX', e.pageX - uifactory.digitalTwin.startPos.x)
+      uifactory.digitalTwin.target.style.setProperty('--deltaY', e.pageY - uifactory.digitalTwin.startPos.y)
+    })
+    window.addEventListener('pointerup', e => {
+      const dt = document.querySelector('digital-twin')
+      if(dt.mode === 'publish') return
+      if (!uifactory.digitalTwin.isMoving) {
+        if(uifactory.digitalTwin.currPath.source.length > 0) {
+          if(e.target.matches('main > block-container > span')) {
+            const currTarget = `#${e.target.closest('block-container').id}`
+            const connected = uifactory.digitalTwin.paths.find(p => (p.source === uifactory.digitalTwin.currPath.source) && (p.target === currTarget))
+            if(!connected && uifactory.digitalTwin.currPath.source !== currTarget) {
+              uifactory.digitalTwin.paths.push({
+                source: uifactory.digitalTwin.currPath.source,
+                from: uifactory.digitalTwin.currPath.from,
+                to: `${currTarget} > span[data-pos="${e.target.dataset.pos}"]`,
+                target: currTarget
+              })
+            }
+          }
+          uifactory.digitalTwin.currPath.source = ''
+          uifactory.digitalTwin.currPath.from = ''
+          uifactory.digitalTwin.currPath.to.x = null
+          uifactory.digitalTwin.currPath.to.y = null
+        }
+        return
+      }
+      uifactory.digitalTwin.target.style.setProperty('--currX',
+        Number(uifactory.digitalTwin.target.style.getPropertyValue('--currX')) +
+        Number(uifactory.digitalTwin.target.style.getPropertyValue('--deltaX'))
+      )
+      uifactory.digitalTwin.target.style.setProperty('--currY',
+        Number(uifactory.digitalTwin.target.style.getPropertyValue('--currY')) +
+        Number(uifactory.digitalTwin.target.style.getPropertyValue('--deltaY'))
+      )
+      uifactory.digitalTwin.target.style.setProperty('--deltaX', 0)
+      uifactory.digitalTwin.target.style.setProperty('--deltaY', 0)
+      uifactory.digitalTwin.startPos.x = 0
+      uifactory.digitalTwin.startPos.y = 0
+      uifactory.digitalTwin.target = null
+      uifactory.digitalTwin.isMoving = false
+    })
+    window.addEventListener('keydown', e => {
+      const dt = document.querySelector('digital-twin')
+      if(dt.mode === 'publish') return
+      const focussed = document.querySelector('input[type="text"]:focus')
+      const selected = document.body.querySelector('.selected')
+      if(e.key === 'Delete' && !focussed && selected) {
+        selected.parentElement.removeChild(selected)
+      }
+    })
+    uifactory.digitalTwin.tick()
+  </script>
+  <script onrender>
+    if('paths' in e.target.dataset && e.target.dataset.paths.length > 0) {
+      uifactory.digitalTwin.paths = JSON.parse(e.target.dataset.paths)
+    }
+  </script>
+</template>
+<template $name="block-container">
+  <style>
+  block-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    --currX: 0;
+    --currY: 0;
+    --deltaX: 0;
+    --deltaY: 0;
+    transform: translate(calc(1px * (var(--currX) + var(--deltaX))),
+        calc(1px * (var(--currY) + var(--deltaY))));
+    padding: 1rem 0;
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    background:hsla(210, 81%, 79%, 0.5);
+    border-radius: 0.25rem;
+  }
+  block-container > span {
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    background: black;
+    opacity: 0;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  block-container:hover > span {
+    opacity: 0.25;
+  }
+  block-container > span:hover {
+    opacity: 0.33;
+  }
+  block-container > span:active {
+    opacity: 0.4;
+  }
+  block-container > span[data-pos="e"] {
+    left: calc(100% - 0.5rem);
+    top: calc(50% - 0.5rem);
+  }
+  block-container > span[data-pos="w"] {
+    left: calc(0% - 0.5rem);
+    top: calc(50% - 0.5rem);
+  }
+  </style>
+  <span data-pos="e"></span>
+  <span data-pos="w"></span>
+  <slot></slot>
+</template>
+<template $name="block-row">
+  <style>
+  block-row {
+    display: flex;
+    gap: 1rem;
+    padding: 0 1rem;
+    align-items: center;
+    /* background: green; */
+  }
+
+  block-row > * {
+    width: 100% !important;
+    align-items: center;
+  }
+  </style>
+</template>
+<template $name="value-block" value="12.231" units="celsius" conditional-class="IF(true, '', 'danger')">
+  <style>
+    value-block {
+      display: flex;
+      flex-direction: column;
+      font-family: Consolas, monospace;
+      font-size: 13;
+      background: hsl(210, 81%, 79%);
+      width: fit-content;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      user-select: none;
+      gap: 0.5rem;
+    }
+
+    value-block > * {
+      pointer-events: none;
+      margin: 0;
+    }
+
+    value-block > h4 {
+      font-size: 13pt;
+      font-weight: 500;
+    }
+
+    value-block > h6 {
+      font-size: 7pt;
+      font-weight: bold;
+    }
+  </style>
+  <% this.dataset.status = uifactory?.digitalTwin?.replaceRefs(conditionalClass) %>
+  <h4><%= uifactory?.digitalTwin?.replaceRefs(value) %></h4>
+  <% if(units.length > 0) { %>
+    <h6><%- units %></h6>
+  <% } %>
+</template>
+<template $name="icon-block" icon="fa-temperature-empty" conditional-class="IF(true, '', 'danger')">
+  <style>
+    @import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css);
+    icon-block {
+      display: flex;
+      background: hsl(210, 81%, 79%);
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      user-select: none;
+      justify-content: center;
+    }
+
+    icon-block > * {
+      font-size: 2rem;
+      width: fit-content;
+      pointer-events: none;
+    }
+  </style>
+  <% this.dataset.status = uifactory.digitalTwin.replaceRefs(conditionalClass) %>
+  <i class="fa-solid <%- icon %>"></i>
+</template>
+<template $name="image-block" width="100%" height="100%" src="https://static.thenounproject.com/png/2183159-200.png" conditional-class="0 ? 'danger' : ''">
+  <style>
+    image-block {
+      display: flex;
+      background: hsl(210, 81%, 79%);
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      user-select: none;
+      justify-content: center;
+    }
+
+    image-block > * {
+      object-fit: cover;
+      pointer-events: none;
+    }
+  </style>
+  <% const dt = document.querySelector('digital-twin'); %>
+  <% const vals = conditionalClass.match(/@\w*/g) || [] %>
+  <% let klass = conditionalClass %>
+  <% vals.forEach(val => klass = klass.replace(val, dt.data[dt.frame][val.substring(1)])) %>
+  <% this.dataset.status = eval(klass) %>
+  <img src="<%- src %>" width="<%- width %>" height="<%- height %>"/>
+</template>
+<template $name="properties-panel" target-selector="">
+  <style>
+    properties-panel {
+      border: 1px solid rgba(189,189,189,0.2);
+      border-radius: 4px;
+      background-color: #fbfbfc;
+      z-index: 1;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      font-size: 0.75rem;
+      width: 9rem;
+      height: calc(100% - 1.5rem);
+      font-family: Consolas, monospace;
+      font-size: 13;
+    }
+    properties-panel > h6 {
+      text-transform: uppercase;
+      margin: 0;
+      margin-bottom: 1rem;
+    }
+    properties-panel > input {
+      border: 1px solid rgba(51,51,51,0.08);
+      margin-bottom: 0.75rem;
+      border-radius: 2px;
+      color: #3C4643;
+      font-family: "Nunito Sans", monospace;
+      font-size: 12px;
+      letter-spacing: 0;
+      line-height: 16px;
+    }
+/*
+<% if(targetEl.ui.attrinfo[prop].type === 'urljson') { val = targetEl.__originalNode.hasAttribute(prop) ? targetEl.__originalNode.getAttribute(prop) : targetEl.ui.attrinfo[prop].value }  %>
+*/
+  </style>
+  <% if(targetSelector === undefined) return '<h6>Properties</h6>' %>
+  <% if(targetSelector.length === 0) return '<h6>Properties</h6>' %>
+  <% const targetEl = document.body.querySelector(targetSelector) %>
+  <% if(!targetEl) return '<h6>Properties</h6>' %>
+  <% const props = Object.assign({}, targetEl.$data) %>
+  <% delete props.$target %>
+  <h6>Properties</h6>
+  <label>id</label>
+  <input name="id" value="<%- targetEl.id %>" />
+  <label>class</label>
+  <input name="class" value="<%- targetEl.getAttribute('class') %>" />
+  <% Object.entries(props).forEach(([prop, value]) => { %>
+    <%
+       let val = value;
+       // kebabize- https://stackoverflow.com/a/63116134/15483581
+       const attr = kebabize(prop)
+       if(uifactory.components[targetEl.localName]?.properties[attr].type === 'urljson') {
+         val = targetEl.$contents.hasAttribute(attr) ? targetEl.$contents.getAttribute(attr) : uifactory.components[targetEl.localName].properties[attr].value
+       }
+    %>
+    <label><%= attr %></label>
+    <input name="<%- attr %>" value="<%- val %>" list="keys" />
+  <% }) %>
+  <script>
+    const kebabize = str => {
+      return str.split('').map((letter, idx) => {
+        return letter.toUpperCase() === letter
+          ? `${idx !== 0 ? '-' : ''}${letter.toLowerCase()}`
+          : letter;
+      }).join('');
+    }
+  </script>
+  <script onchange>
+    let selection = document.querySelector('.selected')
+    if(e.currentTarget.targetSelector === 'digital-twin') {
+      selection = document.querySelector('digital-twin')
+    }
+    if(selection) {
+      selection.setAttribute(e.target.name, e.target.value)
+      // const orig = document.querySelector('connector-canvas').__originalNode.querySelector('#'+block.id)
+      // orig.setAttribute(e.target.name, e.target.value)
+    }
+  </script>
+</template>
+<template $name="slider-el"
+          min:number="-10"
+          max:number="10"
+          step:number="1"
+          value:number="5"
+          name="slider"
+          >
+  <style>
+    slider-el {
+      display: block;
+      width: 100%;
+      --track-height: 10px;
+      --track-radius: 5px;
+      --track-background: #eee;
+      --fill-background: dodgerblue;
+      --thumb-width: 15px;
+      --thumb-height: 15px;
+      --thumb-background: dodgerblue;
+      --thumb-shadow: 0 0 0 3px #fafafa;
+      --thumb-radius: 50%;
+      min-width: 4rem;
+    }
+
+    .track {
+      width: 100%;
+      position: relative;
+      height: var(--track-height);
+      border-radius: var(--track-radius);
+      background: var(--track-background, red);
+      cursor: pointer;
+      --marker-pos: calc((var(--value) - var(--min))/(var(--max) - var(--min)) * 100%);
+    }
+
+    .fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: var(--marker-pos);
+      height: var(--track-height);
+      background: var(--fill-background, red);
+      border-radius: var(--track-radius);
+      pointer-events: none;
+    }
+
+    .thumb {
+      position: absolute;
+      top: calc(0.5 * (var(--track-height) - var(--thumb-height)));
+      left: calc(var(--marker-pos) - var(--thumb-width) * 0.5);
+      width: var(--thumb-width);
+      height: var(--thumb-height);
+      background: var(--thumb-background);
+      border-radius: var(--thumb-radius);
+      box-shadow: var(--thumb-shadow);
+      cursor: pointer;
+    }
+
+  </style>
+  <% this.steps = (max - min) / step %>
+  <div class="track" slot="track"
+       onclick="uifactory.sliderEl.handleClick(event)"
+       style="
+              --min: <%- min %>;
+              --max: <%- max %>;
+              --value: <%- value %>;
+              ">
+    <div class="fill"></div>
+    <div class="thumb"
+         tabindex="0"
+         onfocus="uifactory.sliderEl.handleFocus(event)"
+         onblur="uifactory.sliderEl.handleBlur(event)"
+         onpointerdown="uifactory.sliderEl.pointerDown(event)"></div>
+  </div>
+  <script>
+    uifactory.sliderEl = {
+      handleClick(e) {
+        e = e || window.event;
+        const el = e.target || e.srcElement;
+        const target = el.parentElement;
+        const track = target.firstElementChild
+        const trackRect = track.getBoundingClientRect()
+        const distance = e.clientX - trackRect.x
+        const step_in_px = trackRect.width / target.steps
+        let value = target.min + (Math.round(distance / step_in_px ) * target.step)
+        const precision = this.precision(target.step)
+        if(precision > 0) {
+          value = Number(value.toFixed(precision))
+        }
+        target.setAttribute('value', value)
+        target.dispatchEvent(new CustomEvent('change', {
+          bubbles: true,
+          detail: {
+            value: value
+          }
+        }))
+      },
+      handleKeydown(e) {
+        if(!(this._isFocussed && (e.key === 'ArrowLeft' || e.key === 'ArrowRight'))) return
+        let direction = 1
+        if(e.key === 'ArrowLeft') {
+          direction = -1
+        }
+        const delta = this.target.step * direction
+        const track = this.target.firstElementChild
+        const _value = Number(track.style.getPropertyValue('--value'))
+        const value = Math.max(Math.min(_value + delta, this.target.max), this.target.min)
+        track.style.setProperty('--value', value)
+      },
+      handleFocus(e) {
+        e = e || window.event;
+        const el = e.target || e.srcElement;
+        this.target = el.parentElement.parentElement;
+        this._isFocussed = true
+        this.handleKeydown = this.handleKeydown.bind(this)
+        window.addEventListener('keydown', this.handleKeydown)
+      },
+      handleBlur(e) {
+        e = e || window.event;
+        const el = e.target || e.srcElement;
+        this._isFocussed = false
+        const track = this.target.firstElementChild
+        const _value = Number(track.style.getPropertyValue('--value'))
+        this.target.setAttribute('value', _value)
+        window.removeEventListener('keydown', this.handleKeydown)
+        this.target.dispatchEvent(new CustomEvent('change', {
+          bubbles: true,
+          detail: {
+            value: _value
+          }
+        }))
+      },
+      precision(a) {
+        if (!isFinite(a)) return 0;
+        let e = 1, p = 0;
+        while (Math.round(a * e) / e !== a) { e *= 10; p++; }
+        return p;
+      },
+      updateValue(e) {
+        const track = this.target.firstElementChild
+        const step_in_px = track.getBoundingClientRect().width / this.target.steps
+        const delta = Math.round((e.clientX - this._startX) / step_in_px ) * this.target.step
+        const value = Math.max(Math.min(this.target.value + delta, this.target.max), this.target.min)
+        track.style.setProperty('--value', value)
+        this.target.dispatchEvent(new CustomEvent('input', {
+          bubbles: true,
+          detail: {
+            value: value
+          }
+        }))
+        return value
+      },
+      pointerDown(e) {
+        e = e || window.event;
+        var el = e.target || e.srcElement;
+        this.target = el.parentElement.parentElement;
+        this._isDragging = true
+        this._startX = e.clientX
+        this.pointerMove = this.pointerMove.bind(this)
+        this.pointerUp = this.pointerUp.bind(this)
+        this.precision = this.precision.bind(this)
+        window.addEventListener('pointermove', this.pointerMove)
+        window.addEventListener('pointerup', this.pointerUp)
+      },
+      pointerMove(e) {
+        if(!this._isDragging) return;
+        this.updateValue(e)
+      },
+      pointerUp(e) {
+        if(!this._isDragging) return;
+        let value = this.updateValue(e)
+        this._isDragging = false;
+        window.removeEventListener('pointermove', this.pointerMove)
+        window.removeEventListener('pointerup', this.pointerUp)
+        const precision = this.precision(this.target.step)
+        if(precision > 0) {
+          value = Number(value.toFixed(precision))
+        }
+        this.target.setAttribute('value', value)
+        this.target.dispatchEvent(new CustomEvent('change', {
+          bubbles: true,
+          detail: {
+            value: value
+          }
+        }))
+      }
+    }
+  </script>
+</template>
+<template $name="list-crud" list:urljson="/comp/list/">
+  <style>
+    list-crud {
+      display: flex;
+      --font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+      font-family: var(--font-family);
+      gap: 0.25rem;
+    }
+    list-crud button {
+      background: #fff;
+      color: #565656;
+      text-align: center;
+      border: 1px solid rgba(0,0,0,.2);
+      border-radius: 3px;
+      box-shadow: 0 1px 0 0 rgb(0 0 0 / 15%);
+      transition: all .2s ease 0s;
+      transition-property: box-shadow,color;
+      font-family: var(--font-family);
+      cursor: pointer;
+    }
+    list-crud > section > input {
+      line-height: 1.5;
+      background: #fff;
+      border: 1px solid #ced4da;
+      border-radius: 0.25rem;
+      outline: none;
+      font-family: var(--font-family);
+      box-shadow: 0 1px 0 0 rgb(0 0 0 / 15%);
+    }
+    list-crud > section > ul {
+      display: none;
+      position: absolute;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      flex-direction: column;
+      width: max-content;
+      background: #fff;
+      box-shadow: 0 3px 4px 0 rgb(0 0 0 / 15%);
+      margin-top: 0.25rem;
+      border-radius: 0.25rem;
+      overflow-x: hidden;
+      overflow-y: auto;
+      max-height: 20rem;
+      z-index: 100;
+    }
+    list-crud.open > section > ul {
+      display: flex;
+    }
+    list-crud > section > ul > li {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      padding: 0.25rem;
+      gap: 0.25rem;
+      border-bottom: 1px solid rgb(0 0 0 / 5%);
+      /* border-radius: 0.25rem; */
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    list-crud button:hover,
+    list-crud > section > ul > li:hover {
+      background: rgb(233, 233, 233);
+    }
+    list-crud button:active,
+    list-crud > section > ul > li:active {
+      background: rgb(185 234 250 / 50%);
+    }
+    list-crud > section > ul > li > button {
+      box-shadow: none;
+      border-color: rgb(0 0 0 / 15%);
+    }
+    list-crud > section > ul > li > span {
+      flex: 1;
+    }
+    list-crud > section > ul > li.hidden {
+      display: none;
+    }
+    list-crud > section {
+      position: relative;
+    }
+  </style>
+  <% if(!Array.isArray(list)) return %>
+  <button>
+    <svg width="12" height="12" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><path d="M-2-2h16v16H-2z"></path><g stroke="#333" stroke-linecap="round" stroke-linejoin="round"><path d="M6 1v10M1 6h10"></path></g></g></svg>
+  </button>
+  <section>
+    <input name="selection" value="comp"/>
+    <ul>
+      <% list.forEach(item => { %>
+        <li data-value="<%- item.trim().toLowerCase() %>">
+          <span><%= item %></span>
+          <button data-action="rename">rename</button>
+          <button data-action="delete">delete</button>
+        </li>
+      <% }) %>
+    </ul>
+  </section>
+  <script $onfocusin>
+    if(!e.target.matches('list-crud > section > input')) return
+    this.classList.add('open')
+    e.target.focus()
+    e.target.select()
+  </script>
+  <script $onfocusout>
+    if(!e.target.matches('list-crud > section > input')) return
+    // wait for click event in dropdown to register
+    setTimeout(_ => {
+      this.classList.remove('open')
+      this.dispatchEvent(new CustomEvent('list-action', {
+        detail: {
+          value: e.target.value,
+          action: 'read'
+        },
+        bubbles: true
+      }))
+    }, 100)
+  </script>
+  <script $oninput>
+    if(!e.target.matches('list-crud > section > input')) return
+    const value = e.target.value.trim().toLowerCase()
+    this.querySelectorAll('section > ul > li').forEach(li => {
+      li.setAttribute('class', li.dataset.value.includes(value) ? '' : 'hidden')
+    })
+  </script>
+  <script $onclick>
+    if(e.target.matches('list-crud > section > ul > li > span')) {
+      const input = this.querySelector('section > input')
+      input.value = e.target.parentElement.dataset.value
+      this.dispatchEvent(new CustomEvent('list-action', {
+        detail: {
+          value: e.target.parentElement.dataset.value,
+          action: 'read'
+        },
+        bubbles: true
+      }))
+    } else if(e.target.matches('list-crud > section > ul > li > button')) {
+      this.dispatchEvent(new CustomEvent('list-action', {
+        detail: {
+          value: e.target.parentElement.dataset.value,
+          action: e.target.dataset.action
+        },
+        bubbles: true
+      }))
+    } else if(e.target.matches('list-crud > button')) {
+      this.dispatchEvent(new CustomEvent('list-action', {
+        detail: {
+          action: 'add'
+        },
+        bubbles: true
+      }))
+    }
+  </script>
+</template>
+<template $name="component-nav" components:urljson="/comp/list/">
+  <style>
+    component-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: #E1E2E7;
+      border: none;
+      padding-left: 0.5rem;
+      --font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+      font-family: var(--font-family);
+    }
+
+    component-nav > input,
+    component-nav > select {
+      line-height: 1.5;
+      background: #fff;
+      border: 1px solid #ced4da;
+      border-radius: .25rem;
+      outline: none;
+      font-family: var(--font-family);
+      box-shadow: 0 1px 0 0 rgb(0 0 0 / 15%);
+    }
+
+    component-nav button {
+      background: #fff;
+      color: #565656;
+      text-align: center;
+      border: 1px solid rgba(0,0,0,.2);
+      border-radius: 3px;
+      box-shadow: 0 1px 0 0 rgb(0 0 0 / 15%);
+      transition: all .2s ease 0s;
+      transition-property: box-shadow,color;
+      font-family: var(--font-family);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    component-nav button > svg {
+      pointer-events: none;
+      height: 10px;
+    }
+
+    component-nav button > span {
+      margin-top: -0.125rem;
+      pointer-events: none;
+    }
+
+    component-nav > input:focus,
+    component-nav > select:focus,
+    component-nav button:hover {
+      box-shadow: 0 3px 4px 0 rgb(0 0 0 / 15%);
+    }
+  </style>
+  <list-crud list="<%- components %>"></list-crud>
+  <select>
+    <option value="private">private</option>
+    <option disabled value="org">org</option>
+    <option disabled value="public">public</option>
+  </select>
+  <button data-action="run">
+    <svg width="14" height="18" viewBox="0 0 14 18" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <path id="a" d="M0 0h24.429v24H0z"></path>
+      </defs>
+      <g fill="none" fill-rule="evenodd">
+        <path stroke="#333" stroke-width="1.1" stroke-linejoin="round" d="M1.429 17l11.196-8L1.429 1z"></path>
+      </g>
+    </svg>
+    <span>Run</span>
+  </button>
+  <button data-action="save">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="save" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-save fa-w-14 fa-2x"><path fill="currentColor" d="M433.941 129.941l-83.882-83.882A48 48 0 0 0 316.118 32H48C21.49 32 0 53.49 0 80v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V163.882a48 48 0 0 0-14.059-33.941zM224 416c-35.346 0-64-28.654-64-64 0-35.346 28.654-64 64-64s64 28.654 64 64c0 35.346-28.654 64-64 64zm96-304.52V212c0 6.627-5.373 12-12 12H76c-6.627 0-12-5.373-12-12V108c0-6.627 5.373-12 12-12h228.52c3.183 0 6.235 1.264 8.485 3.515l3.48 3.48A11.996 11.996 0 0 1 320 111.48z" class=""></path></svg>
+    <span>Save</span>
+  </button>
+  <button data-action="publish">
+    <svg width="16" height="14" viewBox="0 0 16 14" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" fill-rule="evenodd">
+        <path d="M0-1h16v16H0z"></path>
+        <g transform="translate(.88 .84)" fill="#FFF" stroke="#333">
+          <rect x="3.86" y=".5" width="7.48" height="7.48" rx=".48"></rect>
+          <path d="M4.387 3.966L.436 10.553a.48.48 0 00.412.727h7.904a.48.48 0 00.412-.727L5.21 3.966a.48.48 0 00-.823 0z"></path>
+          <circle cx="10.2" cy="8.28" r="4.04"></circle>
+        </g>
+      </g>
+    </svg>
+    <span>Publish</span>
+  </button>
+</template>

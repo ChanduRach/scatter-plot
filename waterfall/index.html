@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width= initial-scale=1.0">
+<title>Document</title>
+</head>
+<body>
+ <script src="https://cdn.jsdelivr.net/npm/vega@5.21.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.20.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash/lodash.js"></script>
+<script src="https://unpkg.com/uifactory" import="../vega-chart.html"></script>
+<vega-chart spec="waterfall.json"
+    mark-bar-width:number=45
+    mark-bar-fill:string="waterfall-scheme4"
+    mark-intermediate-bar-fill:string="#2A71A4"
+    mark-begin-end-fill:string=#B3B3B3
+    mark-line-stroke-color:string=#000000
+    mark-text-color-dec:string=#FFFFFF
+    mark-text-color-inc:string=#FFFFFF
+    mark-xaxis-domain-color:string=lightgrey
+    mark-yaxis-domain-color:string=lightgrey
+    mark-line-stroke-width:number=1
+    mark-stroke-opacity:number=1
+    mark-bar-radius:number=2
+    mark-label-font-size:number=12
+    mark-stroke-dash:number=[1,0]
+    mark-label-anchor:string=middle
+    mark-label-angle:number=0
+    mark-label-color:string=#000000
+
+>
+</vega-chart>
+ <vega-chart spec="stacked-waterfall.json">
+</vega-chart> 
+<script src="../color-scheme.js"></script>
+</body>
+</html>
+

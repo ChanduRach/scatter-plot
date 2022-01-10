@@ -1,0 +1,871 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A scatter plot example with interactive legend and x-axis.",
+  "width": 200,
+  "height": 200,
+  "padding": 30,
+  "overflow": "visible",
+  "autosize": "pad",
+  "uifactoryConfig": [{
+
+    "type": "mark.symbol",
+
+    "prefix": "mark",
+
+    "insert": "marks[0].marks[3].encode.enter"
+
+  }],
+  "layout": {
+    "bounds": "flush",
+    "padding": 30
+  },
+  "signals": [
+    {
+      "$comment": "This signal is used define data set",
+      "name": "data",
+      "value": null
+    },
+    {
+      "$comment": "This Signal is used to define shape of marks",
+      "name": "markShape",
+      "value": "null"
+    },
+    {
+      "$comment": "This signal to set mark fill color",
+      "name": "markFill",
+      "value": "transparent"
+    },
+    {
+      "$comment": "This signal is set to enable connected lines accross the plots",
+      "name": "markLineOpacity",
+      "value": null
+    },
+    {
+      "$comment": "This signal defines y axis by col name",
+      "name": "yField",
+      "value": "Miles_per_Gallon"
+    },
+    {
+      "$comment": "This signal defines x axis and its col name",
+      "name": "xField",
+      "value": "Horsepower"
+    },
+    {
+      "$comment": "This signal is used to define color scheme",
+      "name": "markColorScheme",
+      "value":null
+    },
+    {
+      "$comment": "This signal is used to define marks text",
+      "name": "markLabel",
+      "value":null
+    },
+    {
+      "name": "xrange",
+      "update": "[0, width]"
+    },
+    {
+      "name": "yrange",
+      "update": "[height, 0]"
+    },
+    {
+      "$comment": "signal to clear brushed area",
+      "name": "_clear",
+      "value": true,
+      "on": [
+        {
+          "events": "mouseup[!event.item]",
+          "update": "true",
+          "force": true
+        }
+      ]
+    },
+    {
+      "name": "shift",
+      "value": false,
+      "on": [
+        {
+          "events": "@legendSymbol:click",
+          "update": "event.shiftKey",
+          "force": true
+        }
+      ]
+    },
+    {
+      "name": "clicked",
+      "value": null,
+      "on": [
+        {
+          "events": "@legendSymbol:click",
+          "update": "{value: datum.value}",
+          "force": true
+        }
+      ]
+    },
+    {
+      "$comment": "This signal is used to brush marks on scatter plot",
+      "name": "brush",
+      "value": 0,
+      "on": [
+        {
+          "events": {
+            "signal": "_clear"
+          },
+          "update": "_clear ? [0, 0] : brush"
+        },
+        {
+          "events": "@xaxis:mousedown",
+          "update": "[x(), x()]"
+        },
+        {
+          "events": "[@xaxis:mousedown, window:mouseup] > window:mousemove!",
+          "update": "[brush[0], clamp(x(), 0, width)]"
+        }
+      ]
+    },
+    {
+      "name": "domain",
+      "on": [
+        {
+          "events": {
+            "signal": "brush"
+          },
+          "update": "span(brush) ? invert('x', brush) : null"
+        }
+      ]
+    },
+    {
+      "name": "down",
+      "value": null,
+      "on": [
+        {
+          "events": "touchend",
+          "update": "null"
+        },
+        {
+          "events": "mousedown, touchstart",
+          "update": "xy()"
+        }
+      ]
+    },
+    {
+      "name": "xcur",
+      "value": null,
+      "on": [
+        {
+          "events": "mousedown, touchstart, touchend",
+          "update": "slice(xdom)"
+        }
+      ]
+    },
+    {
+      "name": "ycur",
+      "value": null,
+      "on": [
+        {
+          "events": "mousedown, touchstart, touchend",
+          "update": "slice(ydom)"
+        }
+      ]
+    },
+    {
+      "name": "delta",
+      "value": [
+        0,
+        0
+      ],
+      "on": [
+        {
+          "events": [
+            {
+              "source": "window",
+              "type": "mousemove",
+              "consume": true,
+              "between": [
+                {
+                  "type": "mousedown"
+                },
+                {
+                  "source": "window",
+                  "type": "mouseup"
+                }
+              ]
+            },
+            {
+              "type": "touchmove",
+              "consume": true,
+              "filter": "event.touches.length === 1"
+            }
+          ],
+          "update": "down ? [down[0]-x(), y()-down[1]] : [0,0]"
+        }
+      ]
+    },
+    {
+      "name": "anchor",
+      "value": [
+        0,
+        0
+      ],
+      "on": [
+        {
+          "events": "wheel",
+          "update": "[invert('x', x()), invert('y', y())]"
+        },
+        {
+          "events": {
+            "type": "touchstart",
+            "filter": "event.touches.length===2"
+          },
+          "update": "[(xdom[0] + xdom[1]) / 2, (ydom[0] + ydom[1]) / 2]"
+        }
+      ]
+    },
+    {
+      "$comment": "this signal is used to zoom marks across axis",
+      "name": "zoom",
+      "value": 1,
+      "on": [
+        {
+          "events": "wheel!",
+          "force": true,
+          "update": "pow(1.001, event.deltaY * pow(16, event.deltaMode))"
+        },
+        {
+          "events": {
+            "signal": "dist2"
+          },
+          "force": true,
+          "update": "dist1 / dist2"
+        }
+      ]
+    },
+    {
+      "name": "dist1",
+      "value": 0,
+      "on": [
+        {
+          "events": {
+            "type": "touchstart",
+            "filter": "event.touches.length===2"
+          },
+          "update": "pinchDistance(event)"
+        },
+        {
+          "events": {
+            "signal": "dist2"
+          },
+          "update": "dist2"
+        }
+      ]
+    },
+    {
+      "name": "dist2",
+      "value": 0,
+      "on": [
+        {
+          "events": {
+            "type": "touchmove",
+            "consume": true,
+            "filter": "event.touches.length===2"
+          },
+          "update": "pinchDistance(event)"
+        }
+      ]
+    },
+    {
+      "name": "xdom",
+      "update": "slice(xext)",
+      "on": [
+        {
+          "events": {
+            "signal": "delta"
+          },
+          "update": "[xcur[0] + span(xcur) * delta[0] / width, xcur[1] + span(xcur) * delta[0] / width]"
+        },
+        {
+          "events": {
+            "signal": "zoom"
+          },
+          "update": "[anchor[0] + (xdom[0] - anchor[0]) * zoom, anchor[0] + (xdom[1] - anchor[0]) * zoom]"
+        },
+        {
+          "events": "dblclick",
+          "update": "[0,250]"
+        }
+      ]
+    },
+    {
+      "name": "ydom",
+      "update": "slice(yext)",
+      "on": [
+        {
+          "events": {
+            "signal": "delta"
+          },
+          "update": "[ycur[0] + span(ycur) * delta[1] / height, ycur[1] + span(ycur) * delta[1] / height]"
+        },
+        {
+          "events": {
+            "signal": "zoom"
+          },
+          "update": "[anchor[1] + (ydom[0] - anchor[1]) * zoom, anchor[1] + (ydom[1] - anchor[1]) * zoom]"
+        },
+        {
+          "events": "dblclick",
+          "update": "[0,50]"
+        }
+      ]
+    },
+    {
+      "name": "markTrendLineMethod", "value": "linear"
+    },
+    {
+      "name": "markTrendLineGroupby", "value": "none"
+    }
+  ],
+  "data": [
+    {
+      "name": "source",
+      "values": {
+        "signal": "data"
+      },
+      "transform": [
+        {
+          "type": "extent",
+          "field": {"signal": "xField"},
+          "signal": "xext"
+        },
+        {
+          "type": "extent",
+          "field": {"signal": "yField"},
+          "signal": "yext"
+        },
+        {
+          "type": "filter",
+          "expr": "datum[xField] != null && datum['Miles_per_Gallon'] != null && datum['Origin'] != null"
+        }
+      ]
+    },
+    {
+      "name": "selected",
+      "on": [
+        {
+          "trigger": "_clear",
+          "remove": true
+        },
+        {
+          "trigger": "!shift",
+          "remove": true
+        },
+        {
+          "trigger": "!shift && clicked",
+          "insert": "clicked"
+        },
+        {
+          "trigger": "shift && clicked",
+          "toggle": "clicked"
+        }
+      ]
+    },
+    {
+      "$comment":"Returns number of null values from data set",
+      "name": "nullXY",
+      "source": "source",
+      "transform": [{
+          "type": "filter",
+          "expr": "datum[xField] == 0 && datum[yField] == 0"
+        },
+        {
+          "type": "aggregate"
+        }
+      ]
+    },
+    {
+      "name": "trend",
+      "source": "source",
+      "transform": [
+        {
+          "type": "regression",
+          "groupby": [{"signal": "markTrendLineGroupby === 'genre' ? 'Name' : 'foo'"}],
+          "method": {"signal": "markTrendLineMethod"},
+          "extent": {"signal": "domain('x')"},
+          "x": {"signal": "xField"},
+          "y": {"signal": "yField"},
+          "as": ["u", "v"]
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "linear",
+      "round": true,
+      "nice": true,
+      "zero": true,
+      "domain": {
+        "signal": "xdom"
+      },
+      "range": {
+        "signal": "xrange"
+      }
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "round": true,
+      "nice": true,
+      "zero": true,
+      "domain": {
+        "signal": "ydom"
+      },
+      "range": {
+        "signal": "yrange"
+      }
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "range": {
+        "scheme": {"signal": "markColorScheme"}
+      },
+      "domain": {
+        "data": "source",
+        "field": "Origin"
+      }
+    }
+  ],
+  "legends": [
+    {
+      "stroke": "color",
+      "title": "Origin",
+      "encode": {
+        "symbols": {
+          "name": "legendSymbol",
+          "interactive": true,
+          "update": {
+            "fill": {
+              "value": "transparent"
+            },
+            "strokeWidth": {
+              "value": 1
+            },
+            "opacity": [
+              {
+                "test": "!length(data('selected')) || indata('selected', 'value', datum.value)",
+                "value": 0.7
+              },
+              {
+                "value": 0.15
+              }
+            ],
+            "size": {
+              "value": 64
+            }
+          }
+        },
+        "labels": {
+          "name": "legendLabel",
+          "interactive": true,
+          "update": {
+            "opacity": [
+              {
+                "test": "!length(data('selected')) || indata('selected', 'value', datum.value)",
+                "value": 1
+              },
+              {
+                "value": 0.25
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "from": {
+        "facet": {
+          "name": "facet",
+          "data": "source",
+          "groupby": "facet"
+        }
+      },
+
+      "sort": {"field": "datum.Origin", "order": "ascending"},
+
+      "title": {
+        "text": {"signal": "datum.origin"},
+        "frame": "group"
+      },
+
+      "encode": {
+        "update": {
+          "width": {"signal": "width"},
+          "height": {"signal": "height"}
+        }
+      },
+
+      "axes": [
+        {
+          "scale": "x",
+          "grid": true,
+          "domain": false,
+          "orient": "bottom",
+          "tickCount": 5,
+          "title": {"signal": "xField"}
+        },
+        {
+          "scale": "y",
+          "grid": true,
+          "domain": false,
+          "orient": "left",
+          "titlePadding": 5,
+          "title": {"signal": "yField"}
+        }
+      ],
+
+      "marks": [
+        {
+          "name": "marks",
+          "type": "symbol",
+          "from": {
+            "data": "facet"
+          },
+          "encode": {
+            "enter": {
+              "x": {
+                "scale": "x",
+                "field": {"signal": "xField"}
+              },
+              "y": {
+                "scale": "y",
+                "field": {"signal": "yField"}
+              }
+            },
+            "update": {
+              "x": {
+                "scale": "x",
+                "field": {"signal": "xField"}
+              },
+              "y": {
+                "scale": "y",
+                "field": {"signal": "yField"}
+              },
+              "href": {
+                "signal": "'https://www.google.com/search?q=' + datum.Name",
+                "type": "nominal"
+              },
+              "tooltip": {
+                "signal": "{'Name': datum.Name,'Year':datum.Year,'Origin':((datum.Origin))}"
+              },
+             "shape":{
+               "signal": "markShape"
+             },
+              "strokeWidth": {
+                "value": 1
+              },
+              "opacity": [
+                {
+                  "test": "(!domain || inrange(datum[xField], domain)) && (!length(data('selected')) || indata('selected', 'value', datum.Origin))",
+                  "value": 0.7
+                },
+                {
+                  "value": 0.15
+                }
+              ],
+              "stroke": [
+                {
+                  "test": "(!domain || inrange(datum[xField], domain)) && (!length(data('selected')) || indata('selected', 'value', datum.Origin))",
+                  "scale": "color",
+                  "field": "Origin"
+                },
+                {
+                  "value": "#ccc"
+                }
+              ],
+              "fill": {
+                "signal": "markFill"
+              },
+              "hover": {
+                "opacity": {"value": 0.5}
+              }
+            }
+          }
+        },
+        {
+          "$comment": "This mark is used to draw connected lines across the marks ",
+          "type": "line",
+          "from": {
+            "data": "facet"
+          },
+          "encode": {
+            "update": {
+              "x": {"scale": "x", "field": {"signal": "xField"}},
+              "y": {"scale": "y", "field": {"signal": "yField"}},
+              "stroke": {"value": "steelblue"},
+              "opacity": { "signal": "markLineOpacity"},
+              "strokeWidth": {"value": 0.5}
+            }
+          }
+        },
+        { 
+          "$comment":"Text mark is used to show marks label based on column names",
+          "type": "text",
+          "from": {
+            "data": "facet"
+          },
+          "interactive": false,
+          "encode": {
+            "enter": {
+             
+              "font": [{ "value": "Open Sans"} ]
+            },
+            "update": {
+              "text": {
+                "signal": "datum[markLabel]"
+              },
+              "opacity": [
+                {
+                  "test": "(!domain || inrange(datum[xField], domain)) && (!length(data('selected')) || indata('selected', 'value', datum.Origin))",
+                  "value": 1
+                },
+                {
+                  "value": 0
+                }
+              ],
+              "x": {
+                "scale": "x",
+                "field": {"signal": "xField"}
+              },
+              "y": {
+                "scale": "y",
+                "field": {"signal": "yField"}
+              },
+              "align": {
+                "value": "center"
+              },
+              "baseline": {
+                "value": "bottom"
+              },
+              "fontSize": {
+                "value": 8
+              },
+              "limit":{
+                "value":20
+              },
+              "fill":{
+                "value":"grey"
+              }
+            },
+            "hover": {
+              "opacity": {"value": 0.5}
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "name": "xaxis",
+          "interactive": true,
+          "encode": {
+            "enter": {
+              "x": {
+                "value": 0
+              },
+              "height": {
+                "value": 35
+              },
+              "fill": {
+                "value": "transparent"
+              },
+              "cursor": {
+                "value": "ew-resize"
+              }
+            },
+            "update": {
+              "y": {
+                "signal": "height"
+              },
+              "width": {
+                "signal": "span(range('x'))"
+              }
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "interactive": false,
+          "encode": {
+            "enter": {
+              "y": {
+                "value": 0
+              },
+              "height": {
+                "signal": "height"
+              },
+              "fill": {
+                "value": "#ddd"
+              }
+            },
+            "update": {
+              "x": {
+                "signal": "brush[0]"
+              },
+              "x2": {
+                "signal": "brush[1]"
+              },
+              "fillOpacity": {
+                "signal": "domain ? 0.2 : 0"
+              }
+            }
+          }
+        }, 
+        {
+          "$comment":"Draws trend line",
+          "type": "group",
+          "from": {
+            "facet": {
+              "data": "trend",
+              "name": "curve",
+              "groupby": "Cyinders"
+            }
+          },
+          "marks": [
+            {
+              "type": "line",
+              "from": {"data": "curve"},
+              "encode": {
+                "enter": {
+                  "x": {"scale": "x", "field": "u"},
+                  "y": {"scale": "y", "field": "v"},
+                  "stroke": {"value": "firebrick"}
+                }
+              }
+            }
+          ]
+        },
+       
+        
+      
+        {
+          "type": "rect",
+          "name": "brush",
+          "encode": {
+            "enter": {
+              "y": {
+                "value": 0
+              },
+              "height": {
+                "signal": "height"
+              },
+              "fill": {
+                "value": "transparent"
+              }
+            },
+            "update": {
+              "x": {
+                "signal": "brush[0]"
+              },
+              "x2": {
+                "signal": "brush[1]"
+              }
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "interactive": false,
+          "encode": {
+            "enter": {
+              "y": {
+                "value": 0
+              },
+              "height": {
+                "signal": "height"
+              },
+              "width": {
+                "value": 1
+              },
+              "fill": {
+                "value": "firebrick"
+              }
+            },
+            "update": {
+              "fillOpacity": {
+                "signal": "domain ? 1 : 0"
+              },
+              "x": {
+                "signal": "brush[0]"
+              }
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "interactive": false,
+          "encode": {
+            "enter": {
+              "y": {
+                "value": 0
+              },
+              "height": {
+                "signal": "height"
+              },
+              "width": {
+                "value": 1
+              },
+              "fill": {
+                "value": "firebrick"
+              }
+            },
+            "update": {
+              "fillOpacity": {
+                "signal": "domain ? 1 : 0"
+              },
+              "x": {
+                "signal": "brush[1]"
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    {
+      "type": "text",
+      "interactive": false,
+      "from": {
+        "data": "nullXY"
+      },
+      "encode": {
+        "update": {
+          "x": {
+            "value": 0,
+            "offset": 50
+          },
+          "y": {
+            "signal": "height + 80",
+            "offset": 0
+          },
+          "text": {
+            "signal": "datum.count + ' null values'"
+          },
+          "align": {
+            "value": "center"
+          },
+          "baseline": {
+            "value": "bottom"
+          },
+          "fill": {
+            "value": "#999"
+          },
+          "fontSize": {
+            "value": 14
+          }
+        }
+      }
+    }
+  ]
+}

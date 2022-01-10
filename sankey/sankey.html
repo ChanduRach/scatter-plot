@@ -1,0 +1,367 @@
+<template $name="sankey-diagram" width:number="" height:number="" data-set:url="" node-text-anchor=""
+    node-width:number="" node-padding:number="" node-fill-opacity:number="" path-stroke="" stroke-dasharray:number=""
+    node-fill="" color-palette:string="" color-scale="" label-color:string="" label-opacity:number="">
+
+    <script onrender>
+        var units = "Widgets";
+        var dragFlag = false;
+
+        var margin = {
+                top: 10,
+                right: 10,
+                bottom: 10,
+                left: 10
+            },
+            width = width - margin.left - margin.right,
+            height = height - margin.top - margin.bottom;
+
+        var formatNumber = d3.format(",.0f"),
+            format = function (d) {
+                return formatNumber(d) + " " + units;
+            },
+            //color =d3.scale.category10().domain([0, 0]).range(colorRanges)
+            // color = d3.scale.category10().range(['#2A71A4','#70C2FE','#DB6C04','#FECA98','#8B1680','#ED39DB'])
+            color = eval(colorScale)
+        var svg = d3.select(e.target).append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .attr("viewBox", "0 0 1200 100")
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+        // Define the div for the tooltip
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        var sankey = d3.sankey()
+            .nodeWidth(nodeWidth)
+            .nodePadding(nodePadding)
+            .size([width, height]);
+
+        var path = sankey.link();
+
+        var data = {};
+        d3.json(e.target.dataSet.url, function (error, graph) {
+            var nodeMap = {};
+            graph.nodes.forEach(function (x) {
+                nodeMap[x.name] = x;
+            });
+            graph.links = graph.links.map(function (x) {
+                return {
+                    source: nodeMap[x.source],
+                    target: nodeMap[x.target],
+                    value: x.value                   
+                };
+            });
+
+            data = graph;
+
+            // Properties for nodes to keep track of whether they are collapsed and how many of their parent nodes are collapsed
+            graph.nodes.forEach(function (d, i) {
+                graph.nodes[i] = {
+                    "name": d
+                };
+                graph.nodes[i].collapsing = 0; // count of collapsed parent nodes
+                graph.nodes[i].collapsed = false;
+                graph.nodes[i].collapsible = false;
+                graph.nodes[i].color = d.nodeColorTarget;
+            });
+
+            graph.links.forEach(function (e) {
+                e.source = graph.nodes.filter(function (n) {
+                        return n.name === e.source;
+                    })[0],
+
+                    e.target = graph.nodes.filter(function (n) {
+                        return n.name === e.target;
+                    })[0];
+
+                e.target.collapsible = true;
+            });
+
+            update();
+
+            sankey
+                .nodes(graph.nodes)
+                .links(graph.links)
+                .layout(32);
+
+            // updateSankey(graph, nodeTextAnchor, nodeFillOpacity)
+        });
+
+        function update() {
+
+            nodes = data.nodes.filter(function (d) {
+                // return nodes with no collapsed parent nodes
+                return d.collapsing == 0;
+            });
+
+            links = data.links.filter(function (d) {
+                // return only links where source and target are visible
+                return d.source.collapsing == 0 && d.target.collapsing == 0;
+            });
+
+            sankey
+                .nodes(nodes)
+                .links(links)
+                .layout(32);
+
+            updateSankey(data, nodeTextAnchor, nodeFillOpacity, strokeDasharray, nodeFill);
+        }
+
+        function updateSankey(graph, nodeTextAnchor, nodeFillOpacity) {
+
+            var link = svg.append("g").selectAll(".link")
+                .data(links)
+                .enter().append("path")
+                .attr("class", "link")
+                .style("fill", "none")
+                .attr('stroke-dasharray', strokeDasharray)
+                .style("stroke", function (d) {
+                    if (pathStroke != "") {
+                        return d.target.color = pathStroke
+                    } else {
+                        return color(d.target.color);
+
+                    }
+                })
+                .attr("id", function (d, i) {
+                    d.id = i;
+                    return "link-" + i;
+                })
+                .attr("d", path)
+                .style("stroke-width", function (d) {
+                    return Math.max(1, d.dy);
+                })
+                .sort(function (a, b) {
+                    return b.dy - a.dy;
+                });
+
+            // link.append("title")
+            //     .text(function (d) {
+            //         return d.source.name.name + " → " +
+            //             d.target.name.name + "\n" + format(d.value);
+            //     });
+            link.on("mouseover", function(d) {   
+            div.transition()        
+                .duration(100)      
+                .style("opacity", .9);      
+            div .html("<b>" + d.source.name.name + "</b> → <b>"  + d.target.name.name + "</b><br/>" + format(d.value))  
+                .style("left", (d3.event.pageX) + "px")     
+                .style("top", (d3.event.pageY - 28) + "px");    
+            })                  
+        .on("mouseout", function(d) {       
+            div.transition()        
+                .duration(500)      
+                .style("opacity", 0);   
+        });
+
+            var node = svg.append("g").selectAll(".node")
+                .data(nodes)
+                .enter().append("g")
+                .attr("class", "node")
+                .attr("transform", function (d) {
+                    return "translate(" + d.x + "," + d.y + ")";
+                })
+                .on('dblclick', function (d) {
+                    if (d3.event.defaultPrevented) return;
+                    clickNode(d)
+                })
+                .on('click', highlight_node_links)
+
+                .call(d3.behavior.drag()
+                    .origin(function (d) {
+                        return d;
+                        dragFlag = true
+                    })
+                    .on("drag", dragmove))
+
+            node.append("rect")
+                .attr("height", function (d) {
+                    return d.dy;
+                })
+                .attr("width", sankey.nodeWidth())
+                .style("fill", function (d) {
+                    if (nodeFill == "") {
+                    return d.name.nodeColorTarget.replace(/ .*/, "");
+                    } else {
+                        return d.color = nodeFill
+                    }
+                })
+                .style("stroke", function (d) {
+                    return d3.rgb(d.color).darker(2);
+                })
+                .attr("fill-opacity", nodeFillOpacity)
+                .append("title")
+                .text(function (d) {
+                    return d.name.name + "\n" + format(d.value);
+                });
+
+
+            node.append("text")
+                .attr("x", -6)
+                .attr("y", function (d) {
+                    return d.dy / 2;
+                })
+                .attr("dy", ".35em")
+                .attr("text-anchor", "end")
+                .attr("fill", labelColor)
+                .attr('opacity', labelOpacity)
+                .attr("transform", null)
+                .text(function (d) {
+                    return d.name.name;
+                })
+                .filter(function (d) {
+                    return d.x < width / 2;
+                })
+                .attr("x", 6 + sankey.nodeWidth())
+                .attr("text-anchor", nodeTextAnchor);
+
+            var legend_keys = graph.nodes
+
+            var lineLegend,entries = "";
+            d3.selectAll(".collapseLegend").remove();
+
+            var addIcon = d3.select(e.target).append('div').html('-')
+            addIcon.attr('onclick','hideLegend(event)')
+            .attr('class','collapseLegend')
+            .style('font-size','2rem')
+            .style('margin','1rem')
+            .style('cursor','pointer')
+
+            d3.selectAll("legend").remove();
+            lineLegend = d3.select(e.target).append('legend');
+
+
+            entries = lineLegend.selectAll('svg').data(legend_keys)
+                .enter().append('svg')
+                .attr('width', '200px')
+                .attr('height', '50px')
+                .append('g')
+                .attr("class", "lineLegend")
+                .attr("transform", function (d, i) {
+                    return "translate(25,10)";
+                });
+
+            entries.append("text")
+                .attr("dy", ".25em")
+                .attr("text-anchor", "start")
+                .text(function (d) {
+                    return d.name.name;
+                })
+                .attr("x", sankey.nodeWidth() / 2)
+                .attr("transform", "translate(10,10)")
+                .on('mouseover', highlight)
+                .on('mouseout', removeHighlight);
+
+            entries.append("rect")
+                .attr("fill", function (d) {
+                    return d.name.nodeColorTarget.replace(/ .*/, "");
+                })
+                .attr("width", 20).attr("height", 20)
+                .on('mouseover', highlight)
+               // .attr('title','o')
+                .on('mouseout', removeHighlight)
+
+
+            function highlight(d) {
+                link.filter(function (d2, i) {
+                    return d.name.name == d2.source.name.name
+                }).classed('highlight', true)
+            }
+
+            function removeHighlight(d) {
+                link.filter(function (d2, i) {
+                    return d.name.name == d2.source.name.name
+                }).classed('highlight', false)
+            }
+
+            function dragmove(d) {
+                d3.select(this).attr("transform",
+                    "translate(" + (
+                        d.x = Math.max(0, Math.min(width - d.dx, d3.event.x))
+                    ) + "," + (
+                        d.y = Math.max(0, Math.min(height - d.dy, d3.event.y))
+                    ) + ")");
+                sankey.relayout();
+                link.attr("d", path);
+                dragFlag = true
+            }
+
+            function highlight_node_links(node, i) {
+                if (!dragFlag) {
+                    var remainingNodes = [],
+                        nextNodes = [];
+
+                    var stroke_opacity = 0;
+                    if (d3.select(this).attr("data-clicked") == "1") {
+                        d3.select(this).attr("data-clicked", "0");
+                        stroke_opacity = 0.2;
+                    } else {
+                        d3.select(this).attr("data-clicked", "1");
+                        stroke_opacity = 0.8;
+                    }
+
+                    var traverse = [{
+                        linkType: "sourceLinks",
+                        nodeType: "target"
+                    }, {
+                        linkType: "targetLinks",
+                        nodeType: "source"
+                    }];
+
+                    traverse.forEach(function (step) {
+                        node[step.linkType].forEach(function (link) {
+                            remainingNodes.push(link[step.nodeType]);
+                            highlight_link(link.id, stroke_opacity);
+                        });
+
+                        while (remainingNodes.length) {
+                            nextNodes = [];
+                            remainingNodes.forEach(function (node) {
+                                node[step.linkType].forEach(function (link) {
+                                    nextNodes.push(link[step.nodeType]);
+                                    highlight_link(link.id, stroke_opacity);
+                                });
+                            });
+                            remainingNodes = nextNodes;
+                        }
+                    });
+                }
+                dragFlag = false
+            }
+
+            function highlight_link(id, opacity) {
+                d3.select("#link-" + id).style("stroke-opacity", opacity);
+            }
+
+            function clickNode(d) {
+                if (d3.event.defaultPrevented) return;
+                if (d.collapsible) {
+                    var inc = d.collapsed ? -1 : 1;
+                    recurse(d);
+
+                    function recurse(sourceNode) {
+                        graph.links.forEach(function (l) {
+
+                            if (l.source.name.name === sourceNode.name.name) {
+                                l.target.collapsing += inc;
+                                recurse(l.target);
+                            }
+                        });
+                    }
+                    d.collapsed = !d.collapsed;
+                }
+                svg.selectAll("g").remove();
+                sankey.relayout();
+                update()
+                // sankey.layout(32);
+                // updateSankey();
+
+            }
+        }
+    </script>
+</template>

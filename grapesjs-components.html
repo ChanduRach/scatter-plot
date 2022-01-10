@@ -1,0 +1,1426 @@
+  <style>
+    :root {
+      --box-shadow: 0px 2px 4px #d3d3d3;
+      --text-color: #212529;
+      --border-color: #cecece;
+      --error: #dc3545;
+      --placeholder-color: rgb(117, 117, 117);
+      --focus-blue: #0d6efd;
+      --focus-bg-grey: #c2bfbf2d;
+      --upload_file-bg: rgba(26, 118, 189, 0.1);
+      --upload-file-border: rgba(126, 170, 205, 0.5);
+      --btn-primary: #1979C2;
+      --txt-white: #fff;
+      --white-bg: #fff;
+      --secondary-color: #1979C2;
+      --disabled-color: #A1A1A1;
+    }
+
+  </style>
+  <!-- <template component="bs-3-columns">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+      .col-sm-4 {
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid grey;
+      }
+
+      .col-sm-4:first-child,
+      .col-sm-4:nth-last-child(1) {
+        background: #757575;
+      }
+
+      .col-sm-4:nth-child(2) {
+        background: #cccc7a;
+        color: #000;
+      }
+
+    </style>
+    <div class="row">
+      <div class="col-sm-4">.col-sm-4</div>
+      <div class="col-sm-4">.col-sm-4</div>
+      <div class="col-sm-4">.col-sm-4</div>
+    </div>
+ </template> -->
+
+  <template $name="bs5-rating" value="1" max="5">
+    <style>
+      bs5-rating>li>.select,
+      bs5-rating>.unselect:hover {
+        color: #ff4a7c;
+        cursor: pointer;
+      }
+
+      bs5-rating i.fa.fa-star.select,
+      bs5-rating i.fa.fa-star.unselect:hover {
+        color: yellow;
+        cursor: pointer;
+      }
+
+      .rating-li {
+        list-style: none;
+        display: inline-block;
+      }
+
+    </style>
+    <% for (var j=0; j < +value; j++) { %>
+    <li class="rating-li" data-id="<%- j %>" onclick="showRatings(this)"> <i class="fa fa-smile-o select"
+        style="font-size: 1.5em" aria-hidden="true"></i></li>
+    <% } %>
+    <% for (var i=0; i < +max-value; i++) { %>
+    <li class="rating-li" data-id="<%- +value+i %>" onclick="showRatings(this)"> <i class="fa fa-meh-o unselect"
+        style="font-size: 1.5em" aria-hidden="true"></i> </li>
+
+    <% } %>
+
+    <script type="application/json">
+      [{
+          "name": "value",
+          "type": "number",
+          "value": 1
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "value": 1
+        }
+      ]
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script>
+      // $('<style>').text(
+      //   "bs5-rating>li>.select,bs5-rating>.unselect:hover {color: #ff4a7c;cursor: pointer;}bs5-rating i.fa.fa-star.select,bs5-rating i.fa.fa-star.unselect:hover {color: yellow;cursor: pointer;}.rating-li{list-style: none;display: inline-block;}"
+      //   ).appendTo(document.head)
+      $('head').append(
+        '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"  integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">'
+      );
+
+      function showRatings(obj) {
+        $(obj).parent().attr('value', +obj.dataset.id + 1)
+      };
+
+    </script>
+
+  </template>
+
+  <template $name="bs5-textarea" label="Textarea" name="textarea" placeholder="Placeholder" value="text"
+    height:number="100" maxLength:number="100">
+    <style>
+      bs5-textarea {
+        display: block;
+      }
+
+      bs5-textarea textarea:hover {
+        box-shadow: var(--box-shadow)
+      }
+
+      bs5-textarea :focus {
+        color: var(--text-color) !important;
+        border-color: var(--border-color) !important;
+        outline: 0 !important;
+        box-shadow: var(--box-shadow) !important;
+      }
+
+      bs5-textarea .badge {
+        background-color: var(--white-bg);
+        border: 1px solid var(--border-color);
+        left: 90% !important;
+        color: var(--bs-secondary) !important;
+      }
+
+    </style>
+    <div class="form-floating">
+      <span class="position-absolute top-0 translate-middle badge">
+        <span class="word-count"></span> / <%- maxlength %></span>
+      <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea2"
+        oninput="uifactory.bs5Textarea.handleInput(event)" style="height: <%- height %>px" aria-describedby="helpText"
+        maxlength=" <%- maxlength %>"></textarea>
+      <label for="floatingTextarea2"><%= label %></label>
+    </div>
+    <script>
+      document.body.addEventListener('render', function (e) {
+        if (!e.target.matches('bs5-textarea')) return
+        uifactory.bs5Textarea = {
+          handleInput: function (e) {
+            e.target.parentElement.querySelector('.word-count').textContent = e.target.value.length
+          }
+        }
+      })
+
+    </script>
+
+  </template>
+
+
+  <template $name="bs4-text" label="Text, is it?" name="text" value="" placeholder="Placeholder..">
+    <style>
+      bs4-text {
+        display: block;
+      }
+
+    </style>
+    <script type="text/html">
+      <label data-type="text" for="<%= name %>"><%= label %></label>
+      <% let id = typeof this.id !== undefined || this.id.length > 0 ? this.id : Date.now() %>
+
+      <input type="text" class="form-control" name="<%= name %>" id="bs4-<%= id %>" aria-describedby="text-<%= name %>"
+        placeholder="<%= typeof placeholder !== undefined && placeholder.length > 0 ? placeholder : '' %>"
+        value="<%= value %>" oninput="getTextVal(event)">
+
+    </script>
+    <script>
+      function getTextVal(e) {
+        e.target.setAttribute('value', e.target.value)
+        const comps = Array.from(editor.getComponents().models)
+        const comp = comps[i]
+        const el = comp.getEl()
+        const elName = el.tagName.toLowerCase()
+        const component = editor.getSelected();
+        component.getTrait('value').set('value', e.target.value);
+      }
+
+    </script>
+  </template>
+
+
+  <template $name="bs4-select" label="Select" name="select" options:array="['One', 'Two']" value=""
+    title="This is a select field">
+    <script type="text/html">
+      <label class="d-block" data-type="select" for="<%= name %>"><%= label %></label>
+      <select class="custom-select" name="<%= name %>" id="<%= name %>">
+        <%= options.map(item => item.trim()).map((opt) => {
+          var selected = opt === value ? "selected" : ""
+          return '<option ' + selected + ' value="' + encodeURI(opt) + '">' + opt + '</option>'
+        }).join('') %>
+        <% [...this.children].forEach(child => { %>
+        <% if (child.tagName === 'OPTION' ) { %>
+        <%= child.outerHTML %>
+        <% } %>
+        <% }) %>
+      </select>
+
+    </script>
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> -->
+    <script>
+      document.body.addEventListener('render', function (e) {
+        if (!e.target.matches('bs4-select')) return
+        const opts = Object.assign({}, e.target.__model)
+        const bsSelectAttributes = ["title", "value"]
+        const select = this.querySelector('select')
+        Object.keys(opts).forEach(key => {
+          if (!bsSelectAttributes.includes(key)) {
+            delete opts[key]
+          }
+        })
+        $(e.target.querySelector('select')).attr(opts);
+      })
+
+    </script>
+  </template>
+
+  <template $name="bs4-range" label="Range" name="range" value="" min="1" max="10" step="1">
+    <style>
+      bs4-range {
+        display: block;
+      }
+
+    </style>
+    <label data-type="range" for="<%= name %>"><%= label %></label>
+    <input type="range" class="form-control-range" id="<%= name %>" min="<%= min %>" max="<%= max %>" step="<%= step %>"
+      value="<%= value %>">
+
+  </template>
+
+  <template $name="bs4-radio" label="Radio button" name="radio" options:array="['Radio one', 'Radio two']"
+    value="Radio one">
+    <script type="text/html">
+      <label data-type="text" for="<%= name %>"><%= label %></label>
+      <% options.map(item => item.trim()).forEach(function (option, ind) { %>
+      <% let local_id = Date.now() + Math.round(Math.random() * 1e6) %>
+      <div class="form-check py-2 px-0">
+        <input type="radio" class="px-2" name="<%= name %>" id="<%= ind + '-' + local_id %>" value='<%= option %>'
+          <%= value === option ? "checked" : "" %>>
+        <label data-type="radio" class="px-2" for="<%= ind + '-' + local_id %>">
+          <%= option %>
+        </label>
+
+      </div>
+      <% }) %>
+
+    </script>
+  </template>
+
+  <template $name="bs4-password" label="Password" name="password" placeholder="Password placeholder" minlength="8"
+    maxlength="30" size="15">
+    <label data-type="password" for="<%= name %>"><%= label %></label>
+    <input type="password" class="form-control" name="<%= name %>" id="<%= name %>" placeholder="<%= placeholder %>">
+  </template>
+
+  <template $name="bs4-number" label="Number" placeholder="Enter a number" name="number" value:number="3" min:number="1"
+    max:number="10" step:number="1">
+    <style>
+      bs4-number {
+        display: block;
+      }
+
+    </style>
+    <label data-type="number" for="<%= name %>"><%= label %></label>
+    <input type="number" class="form-control" name="<%= name %>" id="<%= name %>" aria-describedby="<%= name %>-help"
+      placeholder="<%= placeholder %>" min="<%= min %>" max="<%= max %>" step="<%= step %>" value="<%= value %>">
+  </template>
+
+
+  <template $name="bs4-multiselect" label="Multi-select" name="multiselect" options:array="['One', 'Two']" value=""
+    actions-box="false" select-all-text="Select All" deselect-all-text="Deselect All" header="" live-search="false"
+    live-search-placeholder="" live-search-style="contains" size="auto" title="">
+    <style>
+      /* @import url('https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.18/dist/css/bootstrap-select.min.css'); */
+
+      bs4-multiselect {
+        display: inline-block;
+      }
+
+      bs4-multiselect span.text:before {
+        content: '';
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        background-color: #E6E6E6;
+        position: absolute;
+        left: 17px;
+        top: 8px;
+      }
+
+      bs4-multiselect .bs-ok-default:after {
+        border-style: none !important;
+      }
+
+      bs4-multiselect .show-tick .dropdown-menu .selected span.check-mark {
+        background-color: #25B8FF;
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        left: 17px;
+        z-index: 10;
+        top: 8px !important;
+      }
+
+      bs4-multiselect .dropdown-item.active,
+      bs4-multiselect .dropdown-item:active {
+        background-color: transparent !important;
+      }
+
+      /* It is generated dynamically, we are not allowing add default-classes in html. */
+      bs4-multiselect .dropdown-menu {
+        border: 1px solid rgba(151, 151, 151, 0.42);
+        border-radius: 8px;
+        padding-right: 3px;
+        padding-left: 3px;
+        background-color: #FFFFFF;
+        box-shadow: 0 12px 14px 0 rgba(0, 0, 0, 0.04);
+        left: auto !important;
+        right: 0;
+        min-width: 108px;
+      }
+
+      bs4-multiselect .bs-actionsbox,
+      .bs-donebutton,
+      .bs-searchbox {
+        padding: 0px;
+      }
+
+      /* select title header */
+      bs4-multiselect .popover-header {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+        border-bottom: 1px solid rgba(151, 151, 151, 0.27);
+        margin-bottom: 8px;
+      }
+
+      bs4-multiselect .popover-header button,
+      bs4-multiselect ul .apply-button-group {
+        display: none;
+      }
+
+      bs4-multiselect .dropdown-menu.inner {
+        max-height: 150px;
+      }
+
+    </style>
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script> -->
+    <script type="text/html">
+      <label class="d-block" data-type="select" for="select-element"><%= label %></label>
+      <select class="selectpicker" multiple name="<%= name %>" id="<%= name %>">
+        <% if (typeof options !== undefined) { %>
+        <%= options.map(item => item.trim()).map((opt) => {
+            var selected = opt === value ? "selected" : "";
+            return '<option class="text-dark pb-1 pl-5"' + selected + ' value="' + encodeURI(opt) + '">' + opt + '</option>'
+          }).join('') %>
+        <% } %>
+        <% [...this.children].forEach(child => { %>
+        <% if (child.tagName === 'OPTION' ) { %>
+        <%= child.outerHTML %>
+        <% } %>
+        <% }) %>
+      </select>
+
+    </script>
+    <script>
+      $.fn.selectpicker.Constructor.BootstrapVersion = '4';
+      document.body.addEventListener('render', function (e) {
+        // select element -> element should be e.target
+        // button -> select attributes -- element should be this
+        if (!e.target.matches('bs4-multiselect')) return
+        const opts = Object.assign({}, e.target.__model)
+        const attrs = {}
+        const dataset = {}
+        const bsSelectAttributes = ["title", "multiple", "value", "actionsBox", "deselectAllText", "header",
+          "liveSearch", "liveSearchPlaceholder", "liveSearchStyle", "selectAllText", "size", "style", "title"
+        ];
+        const dataAttr = ["actionsBox", "deselectAllText", "header", "liveSearch", "liveSearchPlaceholder",
+          "liveSearchStyle", "selectAllText", "size", "style", "title"
+        ];
+        const select = e.target.querySelector('select')
+        Object.keys(opts).forEach(key => {
+          if (!bsSelectAttributes.includes(key)) {
+            delete opts[key]
+          } else {
+            if (dataAttr.includes(key)) {
+              select.dataset[key] = opts[key]
+            } else {
+              attrs[key] = opts[key]
+            }
+          }
+        })
+        $(select).attr(opts);
+        $(select).selectpicker();
+      })
+
+    </script>
+  </template>
+
+
+  <template $name="bs4-html" value="<h1>HTML</h1>">
+    <%= value %>
+  </template>
+
+  <template $name="bs4-email" label="Email" name="email" placeholder="jane@example.com" value=""
+    pattern=".+@gramener.com">
+    <label data-type="email" for="<%= name %>"><%= label %></label>
+    <input type="email" class="form-control" name="<%= name %>" id="<%= name %>" aria-describedby="email-<%= name %>"
+      placeholder="<%= placeholder %>" pattern="<%= pattern || '.*' %>" value="<%= value %>">
+  </template>
+  <template $name="bs4-hidden" label="Text label - Hidden field" name="hidden" value="">
+    <label data-type="html" for="hidden-input"><%= label %></label>
+    <input type="hidden" id="<%= name %>" name="<%= name %>" value="<%= value %>">
+  </template>
+
+  <template $name="bs4-button" type="submit" label="I'm a button!" size="medium" color="primary" outline="false"
+    gradient="false" transparent="false" link="false" shape="none" border="false" border-size="1" border-color="primary"
+    border-rounded="false" border-radius-position="top" icon-library="" icon-type="" icon-position="">
+    <style>
+      /* @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css'); */
+
+      .aspect-ratio-1 {
+        aspect-ratio: 1;
+        width: var(--size, 60px);
+        height: var(--size, 60px);
+      }
+
+    </style>
+    <% var klass = {} %>
+    <!-- size: ['', 'small', 'large'] -->
+    <% klass.sizeClass = size === 'small' ? 'btn-sm' : size === 'large' ? 'btn-lg' : '' %>
+    <!-- color: ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white'] -->
+    <!-- outline: [true, false] -->
+    <% klass.styleClass = outline === 'true' ? 'btn-outline-' + color : 'btn-' + color %>
+
+    <!-- gradient: [true, false] -->
+    <% klass.gradientClass = gradient === 'true' ? 'bg-gradient' : '' %>
+
+    <!-- transparent: [true, false] -->
+    <% klass.transparentClass = transparent === 'true' ? 'bg-transparent' : '' %>
+
+    <!-- link: [true, false] -->
+    <% klass.linkClass = link === 'true' ? 'btn-link' : '' %>
+
+    <!-- shape: ['', 'pill', 'circle'] -->
+    <% klass.shapeClass = shape === 'pill' ? 'rounded-pill' : shape === 'circle' ? 'rounded-pill aspect-ratio-1 d-flex align-items-center justify-content-center' : '' %>
+
+    <!-- border: [true, false] -->
+    <% klass.borderClass = border === 'true' ? 'border' : '' %>
+    <!-- borderSize: [1, 2, 3, 4, 5] -->
+    <% klass.borderSize = border === 'true' && borderSize ? borderSize : 0 %>
+    <!-- borderSize: [1, 2, 3, 4, 5] -->
+    <% klass.borderSizeClass = border === 'true' && borderSize ? 'border-' + borderSize : '' %>
+    <!-- border-Color: ['primary','secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white'] -->
+    <% klass.borderColorClass = border === 'true' && borderColor ? 'border-' + borderColor : '' %>
+    <!-- borderRounded: [true, false] -->
+    <% klass.borderRoundedClass = borderRounded === 'true' ? 'rounded' : '' %>
+    <!-- borderRadiusPosition: ['top', 'end', 'bottom', 'start'] -->
+    <% klass.borderRadiusPositionClass = borderRounded === 'true' && borderRadiusPosition ? 'rounded-' + borderRadiusPosition : '' %>
+
+    <% var iconClass = {} %>
+    <% iconClass.library = obj['iconLibrary'] ? obj['iconLibrary'] : 'bi' %>
+    <% iconClass.type = obj['iconType'] ? iconClass.library + '-' + obj['iconType'] : 'd-none' %>
+    <!-- iconPosition: ['start', 'end'] -->
+    <% iconClass.position = obj['iconPosition'] ? 'float-' + obj['iconPosition']  : '' %>
+
+    <button type="<%= type %>" class="btn <%= Object.values(klass).join(' ') %>">
+      <i class="<%- Object.values(iconClass).join(' ') %>"></i>
+      <%= label %>
+    </button>
+  </template>
+  <template $name="bs4-checkbox" label="Checkbox" name="checkbox" options:array="['One', 'Two']" value:array="['One']">
+    <label data-type="text" for="<%= name %>"><%= label %></label>
+    <% options.map(item => item.trim()).forEach(function (option, ind) { %>
+    <% let values = value.map(item => item.trim()) %>
+    <% let local_id = Date.now() + Math.round(Math.random() * 1e6) %>
+    <div class="form-check p-0">
+      <input type="checkbox" class="px-2" name="<%= name %>" id="<%= ind + '-' + local_id %>"
+        value='<%= encodeURI(option) %>' <%= values.indexOf(option) > -1 ? "checked" : "" %>>
+      <label data-type="checkbox" class="px-2" for="<%= ind + '-' + local_id %>">
+        <%= option %>
+      </label>
+
+    </div>
+    <% }) %>
+  </template>
+
+  <template $name="bs5-link" label="link" href="#" target="new">
+    <% if(target == 'new') {%>
+    <a href="<%= href %>" class="link-primary" target="_blank"><%= label %></a>
+
+    <%}else{%>
+    <a href="<%= href %>" class="link-primary" target=""><%= label %></a>
+
+    <%}%>
+</template>
+
+<template $name="bs5-heading" label="new heading" h-tag='h1'>
+  <% if (hTag == 'h1'){ %>
+    <h1> <%= label %></h1>
+    <% }else if (hTag =='h2'){ %>
+    <h2> <%= label %></h2>
+    <% } else if(hTag =='h3'){ %>
+    <h3> <%= label %></h3>
+    <% }else if(hTag =='h4'){ %>
+    <h4> <%= label %></h4>
+    <% }else if(hTag =='h5'){ %>
+    <h5> <%= label %></h5>
+    <%}else{%>
+    <h6> <%= label %></h6>
+    <%}%>
+</template>
+
+
+<template $name="bs5-table" rows="3" head="3" cols="3">
+
+  <script type="text/html">
+    <table class="table">
+      <thead>
+        <tr>
+        <% for (let h=0; h < +head; h++) { %>
+    <th>heading <%= h %></th>
+    <% } %>
+    </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <% for (let i=0; i < +rows; i++) { %>
+        <% for (let c=0; c< +cols; c++) { %>
+        <td>cols <%= c %></td>
+        <% } %>
+      </tr>
+      <% } %>
+
+    </tbody>
+    </table>
+    </script>
+  </template>
+
+  <template $name="bs5-image" label='image-upload' help-text="Supported files formats: PNG, JPG">
+    <label for="formFile" class="form-label"><%- label %></label>
+    <input class="form-control" type="file" id="img_input" accept="image/*"
+      onchange="uifactory.imgUpload.handleChange(event,this)">
+    <span class="supportedFiles"><%- helpText %></span>
+    </div>
+  </template>
+
+  <template $name="file-upload" label="upload files" disabled:boolean="false"
+    help-text="Supported files formats: PNG, JPG, DOC, PDF">
+    <style>
+      ::-webkit-file-upload-button {
+        display: none;
+      }
+
+      #selected_filename {
+        position: absolute;
+        display: grid;
+        gap: 0.5rem;
+        word-break: break-all;
+        width: 50%;
+        grid-template-columns: 25% 25%;
+      }
+
+      #selected_filename button {
+        border-radius: 4px;
+      }
+
+      .files>input:disabled {
+        background-color: #dedede !important;
+        opacity: 0.5;
+      }
+
+    </style>
+    <div class="mb-3 files">
+      <label for="formFile" class="form-label"><%- label %></label>
+      <% if(disabled) { %>
+      <input class="form-control" type="file" id="uploadFile_input" multiple disabled>
+      <% }else{ %>
+      <input class="form-control" type="file" id="uploadFile_input" multiple>
+      <% } %>
+      <span class="supportedFiles"><%- helpText %></span>
+      <span id="selected_filename"></span>
+    </div>
+    <script>
+      document.body.addEventListener('render', function (e) {
+        if (!e.target.matches('file-upload')) return
+        let filesArray = [];
+        let appendBagde = "";
+
+        $('#uploadFile_input').change(function () {
+          let getFiles = $('#uploadFile_input')[0].files
+
+          if (getFiles.length > 1) {
+            for (var i = 0; i < getFiles.length; i++) {
+              appendBagde += '<button type="button" class="btn bg-light text-dark">' + getFiles[i].name +
+                '<span class="badge"><img src="assets/images/icon-delete.svg" class="rmIcon" onclick="uifactory.fileUpload.handleInput(event,this)"></span></button>';
+              filesArray.push(getFiles[i].name)
+            }
+            $('#selected_filename').html(appendBagde);
+          } else {
+            appendBagde += '<button type="button" class="btn bg-light text-dark">' + getFiles[0].name +
+              '<span class="badge"><img src="assets/images/icon-delete.svg" class="rmIcon" onclick="uifactory.fileUpload.handleInput(event,this)"></span></button>';
+            $('#selected_filename').html(appendBagde);
+          }
+        });
+        uifactory.fileUpload = {
+          handleInput: function (e, filename) {
+            e.target.parentElement.parentElement.remove()
+          }
+        }
+      });
+
+    </script>
+  </template>
+
+  <template $name="pie-chart" data-set:url="" width:number="200" height:number="200" margin:number="40" stroke="black"
+    stroke-width="2px" color-scale:array='["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"]'
+    path-opacity:number="0.7" sample-data:object='{"a": 9, "b": 20, "c":30, "d":8, "e":12}'>
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <div id="pie-chart"></div>
+    <script>
+      document.body.addEventListener('render', function (e) {
+        if (!e.target.matches('pie-chart')) return
+        const width = e.target.width,
+          height = e.target.height,
+          margin = e.target.margin;
+
+        const radius = Math.min(width, height) / 2 - margin;
+
+        const svg = d3.select("#pie-chart")
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height)
+          .append("g")
+          .attr("transform", `translate(${width/2}, ${height/2})`);
+        var data = e.target.sampleData
+        var jsonData = '';
+
+        if(e.target.dataSet.url != undefined){
+
+          $.ajax({
+            type: "GET",
+            url: e.target.dataSet.url,
+            dataType: "json",
+            async: false,
+            cache: false,
+            complete: function (data) {
+              jsonData = data.responseText;
+            }
+          });
+          data = jsonData
+        }else{
+          data = e.target.sampleData
+        }
+        const color = d3.scaleOrdinal()
+          .range(e.target.colorScale)
+
+        const pie = d3.pie()
+          .value(function (d) {
+            return d[1]
+          })
+
+        const data_ready = pie(Object.entries(data))
+
+        svg
+          .selectAll('pie')
+          .data(data_ready)
+          .join('path')
+          .attr('d', d3.arc()
+            .innerRadius(0)
+            .outerRadius(radius)
+          )
+          .attr('fill', function (d) {
+            return (color(d.data[1]))
+          })
+          .attr("stroke", e.target.stroke)
+          .style("stroke-width", e.target.strokeWidth)
+          .style("opacity", e.target.pathOpacity)
+      })
+
+    </script>
+  </template>
+
+
+  <template $name="bar-chart" data-set:url='' width:number="460" height:number="400" margin-top:number="30" margin-right:number="30"
+    margin-bottom:number="70" margin-left:number="60" fill="#69b3a2"
+    sample-data:object='[
+    {
+       "group":"A",
+       "value":4
+    },
+    {
+       "group":"B",
+       "value":16
+    },
+    {
+       "group":"C",
+       "value":8
+    }
+ ]'>
+
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <div id="bar"></div>
+    <script>
+      document.body.addEventListener('render', function (e) {
+        if (!e.target.matches('bar-chart')) return
+
+        var data = e.target.dataSet.url
+        var barKeys =[];
+        var uniqueCols = '';
+
+        const margin = {
+            top: e.target.marginTop,
+            right: e.target.marginRight,
+            bottom: e.target.marginBottom,
+            left: e.target.marginLeft
+          },
+          width = e.target.width - margin.left - margin.right,
+          height = e.target.height - margin.top - margin.bottom;
+
+        const svg = d3.select("#bar")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scaleBand()
+          .range([0, width])
+          .padding(0.2);
+        const xAxis = svg.append("g")
+          .attr("transform", `translate(0,${height})`)
+
+        const y = d3.scaleLinear()
+          .range([height, 0]);
+        const yAxis = svg.append("g")
+          .attr("class", "myYaxis")
+
+
+        if(data != undefined){
+          $.ajax({
+            type: "GET",
+            url: e.target.dataSet.url,
+            dataType: "json",
+            async: false,
+            cache: false,
+            complete: function (data) {
+              jsonData = data.responseJSON;
+              for (var i in jsonData) {
+                var key = i;
+                var val = jsonData[i];
+                for (var j in val) {
+                  var sub_key = j;
+                  var sub_val = val[j];
+                  barKeys.push(sub_key);
+                  uniqueCols = Array.from(new Set(barKeys));
+                }
+              }
+            }
+          });
+          update(jsonData, uniqueCols)
+
+        }else{
+          data = e.target.sampleData
+          if (e.target.sampleData.length > 0) {
+            var columnsIn = e.target.sampleData[0];
+            for (var key in columnsIn) {
+              barKeys.push(key)
+            }
+          }
+          update(data, barKeys)
+        }
+
+        function update(data, colNames) {
+
+          x.domain(data.map(d => d[colNames[0]]))
+          xAxis.call(d3.axisBottom(x))
+
+          y.domain([0, d3.max(data, d => d[colNames[1]])]);
+          yAxis.transition().duration(0).call(d3.axisLeft(y));
+
+          var u = svg.selectAll("rect")
+            .data(data)
+
+          u
+            .join("rect") // Add a new rect for each new elements
+            //.transition()
+            //.duration(500)
+            .attr("x", d => x(d.group))
+            .attr("y", d => y(d.value))
+            .attr("width", x.bandwidth())
+            .attr("height", d => height - y(d.value))
+            .attr("fill", e.target.fill)
+        }
+
+
+      })
+
+    </script>
+  </template>
+
+  <template $name="area-chart" data-set:url=""
+    sample-data:object="[{'date':'2013-01','value':53},
+                        {'date':'2013-02','value':165},
+                        {'date':'2013-03','value':269},
+                        {'date':'2013-04','value':344},
+                        {'date':'2013-05','value':376},
+                        {'date':'2013-06','value':410},
+                        {'date':'2013-07','value':421},
+                        {'date':'2013-08','value':405},
+                        {'date':'2013-09','value':376},
+                        {'date':'2013-10','value':359},
+                        {'date':'2013-11','value':392},
+                        {'date':'2013-12','value':433},
+                        {'date':'2014-01','value':455},
+                        {'date':'2014-02','value':478}]"
+    circle-fill="red" path-stroke="#69b3a2" path-stroke-width:number="4" path-fill="#69b3a2" path-opacity:number=".3"
+    circle-radius:number="3" width:number="460" height:number="300" margin-top:number="10" margin-right:number="30"
+    margin-bottom:number="30" margin-left:number="50">
+
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script>
+      document.body.addEventListener('render', function (e) {
+        if (!e.target.matches('area-chart')) return
+
+        let fileUrl;
+        const margin = {
+            top: e.target.marginTop,
+            right: e.target.marginRight,
+            bottom: e.target.marginBottom,
+            left: e.target.marginLeft
+          },
+          width = e.target.width - margin.left - margin.right,
+          height = e.target.height - margin.top - margin.bottom;
+
+        const svg = d3.select(e.target)
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+        if (e.target.dataSet == null) {
+          fileUrl = e.target.dataset.set
+        } else {
+          fileUrl = e.target.dataSet.url
+        }
+
+        var jsonData, uniqueCols;
+        var keysof = [];
+
+        if (fileUrl != undefined) {
+
+          $.ajax({
+            type: "GET",
+            url: fileUrl,
+            dataType: "json",
+            async: false,
+            cache: false,
+            complete: function (data) {
+              jsonData = data.responseJSON;
+              for (var i in jsonData) {
+                var key = i;
+                var val = jsonData[i];
+                for (var j in val) {
+                  var sub_key = j;
+                  var sub_val = val[j];
+                  keysof.push(sub_key);
+                  uniqueCols = Array.from(new Set(keysof));
+                }
+              }
+              //          const array = [Object.keys(jsonData[0])].concat(jsonData)
+              // customurl = array.map(it => {return Object.values(it).toString()}).join('\n');
+            }
+          });
+          createChart(jsonData, uniqueCols)
+        } else {
+          if (e.target.sampleData.length > 0) {
+            var columnsIn = e.target.sampleData[0];
+            for (var key in columnsIn) {
+              keysof.push(key)
+            }
+          }
+          jsonData = e.target.sampleData
+          createChart(jsonData, keysof)
+        }
+
+        //  d3.csv(jsonData, d => {return { date : d3.timeParse("%Y-%m-%d")(d.date), value : d.value }}).then(
+
+
+
+        function createChart(data, uniqueCols) {
+
+          data = data.filter((d, i) => i < 90).map(d => {
+            return {
+              date: d3.timeParse("%d-%m-%Y")(d[uniqueCols[0]]),
+              value: d[uniqueCols[1]]
+            }
+          })
+
+          if (data[0].date == null) {
+
+            data = jsonData.filter((d, i) => i < 90).map(d => {
+              return {
+                date: d3.timeParse("%Y-%m-%d")(d[uniqueCols[0]]),
+                value: d[uniqueCols[1]]
+              }
+            })
+
+            if (data[0].date == null && jsonData[0].date.length <= 7) {
+
+              data = jsonData.filter((d, i) => i < 90).map(d => {
+                return {
+                  date: d3.timeParse("%Y-%m")(d[uniqueCols[0]]),
+                  value: d[uniqueCols[1]]
+                }
+              })
+
+            }
+          } else if (data[0].date == null && jsonData[0].date.length <= 7) {
+            alert('invalid date format, please prefer date is Y-m-d or d-m-Y or Y-m')
+            FailureMsg({
+              responseText: `invalid date format, please prefer date is Y-m-d or d-m-Y or Y-m.`
+            })
+          }
+
+          const x = d3.scaleTime()
+            .domain(d3.extent(data, d => d.date))
+            .range([0, width]);
+
+          svg.append("g")
+            .attr("transform", `translate(0,  ${height+5})`)
+            .call(d3.axisBottom(x).ticks(5).tickSizeOuter(0));
+
+          const y = d3.scaleLinear()
+            .domain(d3.extent(data, d => +d.value))
+            .range([height, 0]);
+
+          svg.append("g")
+            .attr("transform", "translate(-5,0)")
+            .call(d3.axisLeft(y).tickSizeOuter(0));
+
+          svg.append("path")
+            .datum(data)
+            .attr("fill", e.target.pathFill)
+            .attr("fill-opacity", e.target.pathOpacity)
+            .attr("stroke", "none")
+            .attr("d", d3.area()
+              .x(d => x(d.date))
+              .y0(height)
+              .y1(d => y(d.value)))
+
+          svg.append("path")
+            .datum(data)
+            .attr("fill", "none")
+            .attr("stroke", e.target.pathStroke)
+            .attr("stroke-width", e.target.pathStrokeWidth)
+            .attr("d", d3.line()
+              .x(d => x(d.date))
+              .y(d => y(d.value)))
+
+          svg.selectAll("myCircles")
+            .data(data)
+            .join("circle")
+            .attr("fill", e.target.circleFill)
+            .attr("stroke", "none")
+            .attr("cx", d => x(d.date))
+            .attr("cy", d => y(d.value))
+            .attr("r", e.target.circleRadius)
+        }
+
+
+      })
+
+    </script>
+  </template>
+
+  <template $name="heatmap-chart"
+    data-set:url=""
+    width:number="350" height:number="350" margin-top:number="30" margin-right:number="30" margin-bottom:number="30"
+    margin-left:number="30" x-axis-label:array='["A", "B", "C", "D"]'
+    y-axis-label:array='["v1", "v2", "v3", "v4", "v5"]'
+    color-Range:array='["white", "#b36995"]'
+    sample-data='[
+    {
+      "group": "A",
+      "variable": "v1",
+      "value": 30
+    },
+    {
+      "group": "A",
+      "variable": "v2",
+      "value": 95
+    },
+    {
+      "group": "A",
+      "variable": "v3",
+      "value": 22
+    },
+    {
+      "group": "A",
+      "variable": "v4",
+      "value": 14
+    },
+    {
+      "group": "A",
+      "variable": "v5",
+      "value": 59
+    },
+    {
+      "group": "B",
+      "variable": "v1",
+      "value": 37
+    },
+    {
+      "group": "B",
+      "variable": "v2",
+      "value": 50
+    },
+    {
+      "group": "B",
+      "variable": "v3",
+      "value": 81
+    },
+    {
+      "group": "B",
+      "variable": "v4",
+      "value": 79
+    },
+    {
+      "group": "B",
+      "variable": "v5",
+      "value": 84
+    },
+    {
+      "group": "C",
+      "variable": "v1",
+      "value": 96
+    },
+    {
+      "group": "C",
+      "variable": "v2",
+      "value": 13
+    },
+    {
+      "group": "C",
+      "variable": "v3",
+      "value": 98
+    },
+    {
+      "group": "C",
+      "variable": "v4",
+      "value": 10
+    },
+    {
+      "group": "C",
+      "variable": "v5",
+      "value": 86
+    },
+    {
+      "group": "D",
+      "variable": "v1",
+      "value": 75
+    },
+    {
+      "group": "D",
+      "variable": "v2",
+      "value": 18
+    },
+    {
+      "group": "D",
+      "variable": "v3",
+      "value": 92
+    },
+    {
+      "group": "D",
+      "variable": "v4",
+      "value": 43
+    },
+    {
+      "group": "D",
+      "variable": "v5",
+      "value": 16
+    }]'>
+
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script>
+      document.body.addEventListener('render', function (e) {
+        if (!e.target.matches('heatmap-chart')) return
+
+        const margin = {
+            top: e.target.marginTop,
+            right: e.target.marginRight,
+            bottom: e.target.marginBottom,
+            left: e.target.marginLeft
+          },
+          width = e.target.width - margin.left - margin.right,
+          height = e.target.height - margin.top - margin.bottom;
+
+        const svg = d3.select(e.target)
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const myGroups = e.target.xAxisLabel
+        const myVars = e.target.yAxisLabel
+
+        const x = d3.scaleBand()
+          .range([0, width])
+          .domain(myGroups)
+          .padding(0.01);
+        svg.append("g")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x))
+
+        const y = d3.scaleBand()
+          .range([height, 0])
+          .domain(myVars)
+          .padding(0.01);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+
+        const myColor = d3.scaleLinear()
+          .range(e.target.colorRange)
+          .domain([1, 100])
+
+         var heatMapData =''
+         var mapKeys = [];
+         var mapCols = '';
+
+        if(e.target.dataSet.url != undefined){
+
+          $.ajax({
+            type: "GET",
+            url: e.target.dataSet.url,
+            dataType: "json",
+            async: false,
+            cache: false,
+            complete: function (data) {
+              heatMapData = data.responseJSON;
+              for (var i in heatMapData) {
+                var key = i;
+                var val = heatMapData[i];
+                for (var j in val) {
+                  var sub_key = j;
+                  var sub_val = val[j];
+                  mapKeys.push(sub_key);
+                  mapCols = Array.from(new Set(mapKeys));
+                }
+              }
+            }
+          });
+          createHeatmap(heatMapData, mapCols)
+        }else{
+          let parseData = JSON.parse(e.target.sampleData)
+          if (parseData.length > 0) {
+            var columnsIn = parseData[0];
+            for (var key in columnsIn) {
+              mapKeys.push(key)
+            }
+          }
+          heatMapData = parseData
+          createHeatmap(heatMapData, mapKeys)
+        }
+
+      //  d3.csv(e.target.dataSet.url).then(function (data) {
+        function createHeatmap(data, cols){
+          svg.selectAll()
+            .data(data, function (d) {
+              return d[cols[0]] + ':' + d[cols[1]];
+            })
+            .enter()
+            .append("rect")
+            .attr("x", function (d) {
+              return x(d[cols[0]])
+            })
+            .attr("y", function (d) {
+              return y(d[cols[1]])
+            })
+            .attr("width", x.bandwidth())
+            .attr("height", y.bandwidth())
+            .style("fill", function (d) {
+              return myColor(d[cols[2]])
+            })
+          }
+       // })
+
+
+      })
+
+    </script>
+
+  </template>
+
+  <template $name="line-chart" data-set:url=""
+  sample-data:object="[{'date':'2013-01','value':53},
+  {'date':'2013-02','value':165},
+  {'date':'2013-03','value':269},
+  {'date':'2013-04','value':344},
+  {'date':'2013-05','value':376},
+  {'date':'2013-06','value':410},
+  {'date':'2013-07','value':421},
+  {'date':'2013-08','value':405},
+  {'date':'2013-09','value':376},
+  {'date':'2013-10','value':359},
+  {'date':'2013-11','value':392},
+  {'date':'2013-12','value':433},
+  {'date':'2014-01','value':455},
+  {'date':'2014-02','value':478}]"
+  path-stroke="blue" stroke-width:number="1.5"
+    width:number="350" height:number="350" margin-top:number="10" margin-right:number="30" margin-bottom:number="30"
+    margin-left:number="60">
+
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script>
+      document.body.addEventListener('render', function (e) {
+        if (!e.target.matches('line-chart')) return
+
+        const margin = {
+            top: e.target.marginTop,
+            right: e.target.marginRight,
+            bottom: e.target.marginBottom,
+            left: e.target.marginLeft
+          },
+          width = e.target.width - margin.left - margin.right,
+          height = e.target.height - margin.top - margin.bottom;
+
+        const svg = d3.select(e.target)
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", `translate(${margin.left},${margin.top})`);
+        var lineData, lineCols;
+        var lineKeys = [];
+
+
+        if(e.target.dataSet.url != undefined){
+        $.ajax({
+          type: "GET",
+          url: e.target.dataSet.url,
+          dataType: "json",
+          async: false,
+          cache: false,
+          complete: function (data) {
+            lineData = data.responseJSON;
+            for (var i in lineData) {
+              var key = i;
+              var val = lineData[i];
+              for (var j in val) {
+                var sub_key = j;
+                var sub_val = val[j];
+                lineKeys.push(sub_key);
+                lineCols = Array.from(new Set(lineKeys));
+              }
+            }
+          }
+        });
+        createLineChart(lineData, lineCols)
+
+      }else{
+        if (e.target.sampleData.length > 0) {
+            var columnsIn = e.target.sampleData[0];
+            for (var key in columnsIn) {
+              lineKeys.push(key)
+            }
+          }
+          lineData = e.target.sampleData
+          createLineChart(lineData, lineKeys)
+      }
+        // d3.csv(e.target.dataSet.url,function(d){return { date : d3.timeParse("%d-%m-%Y")(d.date), value : d.value }}).then(
+
+        function createLineChart(data, lineCols) {
+
+          data = data.map(d => {
+            return {
+              date: d3.timeParse("%d-%m-%Y")(d[lineCols[0]]),
+              value: d[lineCols[1]]
+            }
+          })
+
+          if (data[0].date == null) {
+            data = lineData.map(d => {
+              return {
+                date: d3.timeParse("%Y-%m-%d")(d[lineCols[0]]),
+                value: d[lineCols[1]]
+              }
+            })
+            if (data[0].date == null && lineData[0].date.length <= 7) {
+
+                data = lineData.filter((d, i) => i < 90).map(d => {
+                  return {
+                    date: d3.timeParse("%Y-%m")(d[lineCols[0]]),
+                    value: d[lineCols[1]]
+                  }
+                })
+
+                }
+          }
+
+          const x = d3.scaleTime()
+            .domain(d3.extent(data, function (d) {
+              return d.date;
+            }))
+            .range([0, width]);
+          svg.append("g")
+            .attr("transform", `translate(0, ${height})`)
+            .call(d3.axisBottom(x));
+
+          const y = d3.scaleLinear()
+            .domain([0, d3.max(data, function (d) {
+              return +d.value;
+            })])
+            .range([height, 0]);
+          svg.append("g")
+            .call(d3.axisLeft(y));
+
+          svg.append("path")
+            .datum(data)
+            .attr("fill", "none")
+            .attr("stroke", e.target.pathStroke)
+            .attr("stroke-width", e.target.strokeWidth)
+            .attr("d", d3.line()
+              .x(function (d) {
+                return x(d.date)
+              })
+              .y(function (d) {
+                return y(d.value)
+              })
+            )
+
+        }
+
+      })
+
+    </script>
+  </template>
+
+
+  <template $name="network-chart"
+    data-set:url="https://static.observableusercontent.com/files/31d904f6e21d42d4963ece9c8cc4fbd75efcbdc404bf511bc79906f0a1be68b5a01e935f65123670ed04e35ca8cae3c2b943f82bf8db49c5a67c85cbb58db052?response-content-disposition=attachment%3Bfilename*%3DUTF-8%27%27miserables.json"
+    node-color="#69b3a2" link-color="#aaa" circle-radius:number="20">
+
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script>
+      document.body.addEventListener('render', function (e) {
+        if (!e.target.matches('network-chart')) return
+
+        const margin = {
+            top: 10,
+            right: 30,
+            bottom: 30,
+            left: 40
+          },
+          width = 400 - margin.left - margin.right,
+          height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select(e.target)
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        d3.json(e.target.dataSet.url).then(function (data) {
+
+          const link = svg
+            .selectAll("line")
+            .data(data.links)
+            .join("line")
+            .style("stroke", e.target.linkColor)
+
+          const node = svg.selectAll("circle")
+            .data(data.nodes)
+            .join("circle")
+            .attr("r", e.target.circleRadius)
+            .style("fill", e.target.nodeColor)
+
+          const simulation = d3.forceSimulation(data.nodes)
+            .force("link", d3.forceLink()
+              .id(function (d) {
+                return d.id;
+              })
+              .links(data.links))
+            .force("charge", d3.forceManyBody().strength(-400))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .on("end", ticked);
+
+          function ticked() {
+            link
+              .attr("x1", function (d) {
+                return d.source.x;
+              })
+              .attr("y1", function (d) {
+                return d.source.y;
+              })
+              .attr("x2", function (d) {
+                return d.target.x;
+              })
+              .attr("y2", function (d) {
+                return d.target.y;
+              });
+
+            node
+              .attr("cx", function (d) {
+                return d.x + 6;
+              })
+              .attr("cy", function (d) {
+                return d.y - 6;
+              });
+          }
+
+        });
+      })
+
+    </script>
+  </template>

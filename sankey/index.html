@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.js"> </script>
+  <script src="https://rawgit.com/d3/d3-plugins/master/sankey/sankey.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash/lodash.js"></script>
+  <script src="https://unpkg.com/uifactory" import="sankey.html"></script>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,300" rel="stylesheet" type="text/css">
+
+  <style>
+    body{
+      font-family:'Open Sans';
+      font-size: 12px;
+    }
+    .node rect {
+      cursor: move;
+      shape-rendering: crispEdges;
+    }
+
+    .node text {
+      pointer-events: none;
+      text-shadow: 0 1px 0 #fff;
+    }
+
+    .link {
+      stroke-opacity: .2;
+    }
+
+    .link:hover,
+    .link.highlight {
+      stroke-opacity: .9;
+    }
+
+    legend{
+      display: flex;
+      display: flex;
+      width: 800px;
+    /* grid-template-columns: repeat(1, 1fr); */
+    /* width: 100%; */
+    flex-flow: wrap;
+}
+div.tooltip{
+  position: absolute;           
+  height: auto;                 
+  padding: 4px;             
+    padding: 8px;
+    position: fixed;
+    z-index: 1000;
+    font-family: sans-serif;
+    font-size: 11px;
+    border-radius: 3px;
+    box-shadow: 2px 2px 4px rgb(0 0 0 / 10%);
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid #d9d9d9;
+    color: black; 
+}
+    @media only screen and (max-width: 768px) {
+      legend {
+      width: 200px;
+      }
+      sankey-diagram > svg{
+        width:-webkit-fill-available;
+        height: auto;
+      }
+    }
+
+  </style>
+</head>
+<body>
+ 
+  <sankey-diagram width="1200" 
+  height="740" 
+  data-set="data.json" 
+  path-stroke=""
+  node-text-anchor="start" 
+  node-width="35"
+  node-padding="10" 
+  node-fill=""
+  node-fill-opacity="0.9"
+  label-color="black"
+  label-opacity="0.9"
+  stroke-dasharray="0"
+  color-scale="d3.scale.category10()"
+ >
+</sankey-diagram>
+<!-- <div onclick="hideLegend(event)" style="font-size: 2rem;margin:1rem;cursor: pointer;">-</div> -->
+</body>
+<script>
+var flag = true
+  function hideLegend(e){
+    if(flag){
+            document.querySelector('legend').style.display="none"
+            e.target.innerHTML = "+"
+            flag = false
+        }else{
+            document.querySelector('legend').style.display="block"
+            e.target.innerHTML = "-"
+            flag = true
+        }    
+  }
+</script>
+</html>

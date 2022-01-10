@@ -1,0 +1,358 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "An example of a circle packing layout for hierarchical data.",
+  "width": 600,
+  "height": 600,
+  "padding": 20,
+  "autosize": "none",
+
+  "uifactoryConfig": [{
+    "$comment": "Configuration to make it work with uifactory",
+    "type": "mark.symbol",
+    "prefix": "mark",
+    "insert": "marks[0].encode.enter"
+  }],
+
+  "data": [{
+      "$comment": "Transform data into Tree format",
+      "name": "tree",
+      "values": { "signal": "data" },
+      "transform": [{
+          "type": "stratify",
+          "key": { "signal": "markKey" },
+          "parentKey": { "signal": "markParent" }
+        },
+        {
+          "type": "pack",
+          "field": { "signal": "markField" },
+          "padding": {
+            "signal": "markPadding"
+          },
+          "sort": {
+            "field": "value"
+          },
+          "size": [{
+            "signal": "width"
+          }, {
+            "signal": "height"
+          }]
+        }
+      ]
+    },
+    {
+      "$comment": "Collect all parent nodes",
+      "name": "parentNodes",
+      "source": "tree",
+      "transform": [{
+        "type": "filter",
+        "expr": "datum.children"
+      }]
+    },
+    {
+      "$comment": "Collect all child nodes",
+      "name": "childNodes",
+      "source": "tree",
+      "transform": [{
+        "type": "filter",
+        "expr": "!datum.children"
+      }]
+    }
+  ],
+
+  "signals": [
+    {
+      "$comment": "Field name used to generate nodes for tree map",
+      "name": "markKey",
+      "value": null
+    },
+    {
+      "$comment": "Field name used to generate parent nodes for tree map and establish relationship between nodes",
+      "name": "markParent",
+      "value": null
+    },
+    {
+      "$comment": "Field name to sort data and generate packed chart accordingly",
+      "name": "markField",
+      "value": null
+    }, 
+    {
+      "$comment": "Signal to fetch data file",
+      "name": "data",
+      "value": null
+    },
+    {
+      "$comment": "Internal signal to implement zooming",
+      "name": "_scaleX",
+      "value": 1,
+      "on": [{
+        "events": "symbol:click",
+        "update": "(width/2)/datum.r"
+      }]
+    },
+    {
+      "$comment": "Internal signal to implement zooming",
+      "name": "_scaleY",
+      "value": 1,
+      "on": [{
+        "events": "symbol:click",
+        "update": "(height/2)/datum.r"
+      }]
+    },
+    {
+      "$comment": "Internal signal to implement zooming",
+      "name": "_xTranslation",
+      "value": 0,
+      "on": [{
+        "events": "symbol:click",
+        "update": "(width/2) - datum.x * _scaleX"
+      }]
+    },
+    {
+      "$comment": "Internal signal to implement zooming",
+      "name": "_yTranslation",
+      "value": 0,
+      "on": [{
+        "events": "symbol:click",
+        "update": "(height/2) - datum.y * _scaleY"
+      }]
+    },
+    {
+      "$comment": "Change the shape of the nodes",
+      "name": "markShape",
+      "value": null
+    },
+    {
+      "$comment": "Change opacity of all parent nodes label",
+      "name": "markParentLabelOpacity",
+      "value": null
+    },
+    {
+      "$comment": "Color of all parent nodes label",
+      "name": "markParentLabelFill",
+      "value": null
+    },
+    {
+      "$comment": "Change opacity of all children nodes label",
+      "name": "markChildLabelOpacity",
+      "value": null
+    },
+    {
+      "$comment": "Change color of all children nodes label",
+      "name": "markChildLabelFill",
+      "value": null
+    },
+    {
+      "$comment": "Change color of the outline/border",
+      "name": "markStroke",
+      "value": null
+    },
+    {
+      "$comment": "Change width of the outline/border",
+      "name": "markStrokeWidth",
+      "value": null
+    },
+    {
+      "$comment": "Align all labels horizontally",
+      "name": "markAlign",
+      "value": null
+    },
+    {
+      "$comment": "Align all labels vertically",
+      "name": "markBaseline",
+      "value": null
+    },
+    {
+      "$comment": "Add spacing between the nodes genrated",
+      "name": "markPadding",
+      "value": null
+    },
+    {
+      "$comment": "Change outline/border color on hover",
+      "name": "markHoverStroke",
+      "value":  null
+    },
+    {
+      "$comment": "Change outline/border width on hover",
+      "name": "markHoverStrokeWidth",
+      "value":  null
+    },
+    {
+      "$comment": " Discuss: Whether needed or not. Column name used from database to show on tooltip.",
+      "name": "markTooltip",
+      "value": null
+    },
+    {
+      "$comment": "Column name used from database to generate labels for all nodes",
+      "name": "markText",
+      "value": null
+    },
+    {
+      "$comment": "Color Category to be used to fill the nodes",
+      "name": "markColorScheme",
+      "value": null
+    }
+  ],
+
+  "scales": [{
+    "$comment": "Color scale used to fill the colors inside the nodes for each level",
+    "name": "color",
+    "type": "ordinal",
+    "domain": {
+      "data": "tree",
+      "field": "depth"
+    },
+    "range": {
+      "scheme": {
+        "signal": "markColorScheme"
+      }
+    }
+  }],
+
+  "marks": [
+    {
+      "$comment": "This mark is used to generate the circle or shape provided for all the nodes in the data mentioned.",
+      "type": "symbol",
+      "from": {
+        "data": "tree"
+      },
+      "encode": {
+        "enter": {
+          "description": {
+            "value": "datum.name"
+          }
+        },
+        "update": {
+          "shape": {
+            "signal": "markShape"
+          },
+          "fill": {
+            "scale": "color",
+            "field": "depth"
+          },
+          "x": {
+            "signal": "datum.x * _scaleX + _xTranslation"
+          },
+          "y": {
+            "signal": "datum.y * _scaleY + _yTranslation"
+          },
+          "size": {
+            "signal": "4 * datum.r * datum.r * _scaleX * _scaleY"
+          },
+          "stroke": {
+            "signal": "markStroke"
+          },
+          "tooltip": {
+            "signal": "{'Name': datum[markTooltip], 'Depth': datum.depth}"
+          },
+          "strokeWidth": {
+            "signal": "markStrokeWidth"
+          }
+        },
+        "hover": {
+          "stroke": {
+            "signal": "markHoverStroke"
+          },
+          "strokeWidth": {
+            "signal": "markHoverStrokeWidth"
+          }
+        }
+      }
+    },
+    {
+      "$comment": "This mark is used to generate labels for all the leave nodes or child nodes.",
+      "type": "text",
+      "from": {
+        "data": "childNodes"
+      },
+      "interactive": false,
+      "encode": {
+        "enter": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "font": [{ "value": "Open Sans"} ]
+        },
+        "update": {
+          "text": {
+            "signal": "datum[markText]"
+          },
+          "limit": {
+            "signal": "datum.r * _scaleX * 1.9"
+          },
+          "x": {
+            "signal": "datum.x * _scaleX + _xTranslation"
+          },
+          "y": {
+            "signal": "datum.y * _scaleY + _yTranslation"
+          },
+          "align": {
+            "signal": "markAlign"
+          },
+          "baseline": {
+            "signal": "markBaseline"
+          },
+          "fill": {
+            "signal": "markChildLabelFill"
+          },
+          "opacity": {
+            "signal": "markChildLabelOpacity"
+          }, 
+          "fontSize": [
+            {
+              "test": "_scaleX > 1", "signal": "datum.r / 5 * _scaleX"
+            },
+            {
+              "signal": "datum.r / 1.5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "$comment": "This mark is used ti generate labels for all the parent nodes.",
+      "type": "text",
+      "from": {
+        "data": "parentNodes"
+      },
+      "interactive": false,
+      "encode": {
+        "enter": {
+          "x": {
+            "field": "x"
+          },
+          "y": {
+            "field": "y"
+          },
+          "font": [{ "value": "Open Sans"} ]
+        },
+        "update": {
+          "text": {
+            "signal": "datum[markText]"
+          },
+          "x": {
+            "signal": "datum.x * _scaleX + _xTranslation"
+          },
+          "y": {
+            "signal": "datum.y * _scaleY + _yTranslation"
+          },
+          "align": {
+            "value": "center"
+          },
+          "baseline": {
+            "value": "middle"
+          },
+          "fill": {
+            "signal": "markParentLabelFill"
+          },
+          "opacity": {
+            "signal": "markParentLabelOpacity"
+          },
+          "fontSize": {"signal": "datum.r * _scaleX / 10"} 
+        }
+      }
+    }
+  ]
+}

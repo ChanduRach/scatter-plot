@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width= initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/lodash/lodash.js"></script>
+    <script src="https://unpkg.com/uifactory" import="../vega-chart.html"></script>
+</head>
+<body>
+
+    <vega-chart
+        spec="packed-circle.json"
+        data:urljson="packed-circle-data.json"
+        mark-key:string="id"
+        mark-parent:string="parent"
+        mark-field:string="size"
+        mark-shape:string="circle"
+        mark-parent-label-opacity:number=0
+        mark-parent-label-fill:string="grey"
+        mark-child-label-opacity:number=1
+        mark-child-label-fill:string="#000"
+        mark-stroke:string="purple"
+        mark-stroke-width:number=1
+        mark-align:string="center"
+        mark-baseline:string=middle
+        mark-padding:number=0
+        mark-hover-stroke:string="red"
+        mark-hover-stroke-width:number=2
+        mark-text:string="name"
+        mark-color-scheme:string="packed-circle-default"
+    ></vega-chart>
+    
+    <script src="../color-scheme.js"></script>
+</body>
+</html>
