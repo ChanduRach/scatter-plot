@@ -138,7 +138,7 @@
            },
            {
               "type":"formula",
-              "expr":"",
+              "expr":"datum.amount > 0 ? 'positive': 'negative'",
               "as":"sign_bar"
            }
         ]
@@ -267,7 +267,13 @@
         "name":"markBarWidth",
         "value":45
      },
-     
+     {
+
+      "name":"markReferenceLine",
+
+      "value":2000
+
+      },     
      {
         "name":"markBarFill",
         "value":"greens"
@@ -713,12 +719,34 @@
               "fill":{
                  "signal":"markIntermediateBarFill"
               },
+              "cornerRadius":{
+
+               "signal":"markBarRadius"
+
+            },
               "opacity":[
                  {
                     "test":"!length(data(\"markbarOpacity_store\")) || vlSelectionTest(\"markbarOpacity_store\", datum)",
                     "value":1
                  }
               ],
+              "fillOpacity":[
+
+               {
+
+                  "test":"!length(data(\"select_store\")) || vlSelectionTest(\"select_store\", datum)",
+
+                  "value":1
+
+               },
+
+               {
+
+                  "value":0.3
+
+               }
+
+            ],
               "tooltip":{
                   "signal":"{\"Month\": isValid(datum[\"label\"]) ? datum[\"label\"] : \"\"+datum[\"label\"], \"Begin Amount \": isValid(datum[\"previous_sum\"]) ? datum[\"previous_sum\"] : \"\"+datum[\"previous_sum\"], \"End Amount \": format(datum[\"sum\"], \"\"), \"Diff-Amount\": format(datum[\"amount\"], \"\")}"
                },
@@ -823,12 +851,12 @@
               "x":{
                  "scale":"x",
                  "field":"label",
-                 "offset":-23.5,
+                 "offset":-22.5,
                  "band":0.5
               },
               "y":{
                  "scale":"y",
-                 "value":2000
+                 "signal":"markReferenceLine"
               }
            }
         }
