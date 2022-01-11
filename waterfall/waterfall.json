@@ -274,6 +274,37 @@
       "value":2000
 
       },     
+      {
+
+         "name":"markLabelLimit",
+
+         "value":50
+
+      },
+
+      {
+
+         "name":"markXaxisTitle",
+
+         "value":"Months"
+
+      },
+
+      {
+
+         "name":"markYaxisTitle",
+
+         "value":"Amount"
+
+      },
+
+      {
+
+         "name":"markSumTextColor",
+
+         "value":"#404040"
+
+      },
      {
         "name":"markBarFill",
         "value":"greens"
@@ -913,7 +944,7 @@
                  "value":-4
               },
               "fill":{
-                 "value":"#404040"
+               "signal":"markSumTextColor"
               },
               "description":{
                  "signal":"\"label: \" + (isValid(datum[\"label\"]) ? datum[\"label\"] : \"\"+datum[\"label\"]) + \"; sum_inc: \" + (format(datum[\"sum_inc\"], \"\"))"
@@ -961,7 +992,7 @@
                  "value":4
               },
               "fill":{
-                 "value":"#404040"
+               "signal":"markSumTextColor"
               },
               "description":{
                  "signal":"\"label: \" + (isValid(datum[\"label\"]) ? datum[\"label\"] : \"\"+datum[\"label\"]) + \"; sum_dec: \" + (format(datum[\"sum_dec\"], \"\"))"
@@ -1277,14 +1308,14 @@
         "scale":"x",
         "orient":"bottom",
         "grid":false,
-        "title":"Months",
+        "title":{"signal":"markXaxisTitle"},
         "domainColor":{
            "signal":"markXaxisDomainColor"
         },
         "labelAngle":{
            "signal":"markLabelAngle"
         },
-        "labelLimit":50,
+         "labelLimit":{"signal":"markLabelLimit"},
         "tickSize":{
            "signal":"markTickFontSize"
         },
@@ -1318,7 +1349,7 @@
         "scale":"y",
         "orient":"left",
         "grid":false,
-        "title":"Amount",
+        "title":{"signal": "markYaxisTitle"},
         "format":"$,f",
         "formatType":"number",
         "domainColor":{

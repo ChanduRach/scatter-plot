@@ -31,10 +31,24 @@
     mark-label-angle:number=0
     mark-label-color:string=#000000
     mark-reference-line:number=2000
-
+    mark-label-limit:number=50
+    mark-xaxis-title:string="Months"
+    mark-yaxis-title:string="Amount"
+    mark-sum-text-color:string="#404040"
 >
 </vega-chart>
- <vega-chart spec="stacked-waterfall.json">
+ <vega-chart spec="stacked-waterfall.json"
+ mark-bar-width:number=45
+ mark-label-limit:number=50
+ mark-xaxis-title:string="Months"
+ mark-yaxis-title:string="Amount"
+ mark-sum-text-color:string="#404040" 
+ mark-begin-end-fill:string=#B3B3B3
+ mark-line-stroke-color:string=#000000
+ mark-text-color-inc:string=#FFFFFF
+ mark-line-stroke-width:number=1
+ mark-bar-radius:number=2 
+ >
 </vega-chart> 
 <script src="../color-scheme.js"></script>
 </body>

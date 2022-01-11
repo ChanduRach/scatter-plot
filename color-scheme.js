@@ -6,4 +6,7 @@ document.querySelector('vega-chart').addEventListener('connect', () => {
     vega.scheme('waterfall-scheme3', ['#99D3FD','#D8ECFB'])
     vega.scheme('waterfall-scheme4', ['#B21111','#45C03D'])
     vega.scheme('waterfall-scheme5', ['#DB6C03','#41AFFF'])
+    vega.scheme("zs3", ["#B21111","#45C03D"])
+    vega.scheme("zs1", ["#d8ecfb", "#1f526d", "#70c2fe", "#db6c04", "#feca98"])
+    vega.scheme("zs2", ["#daeffe", "#40afff", "#1f526d", "#30d8bf", "#f0dd53"]) 
 })
