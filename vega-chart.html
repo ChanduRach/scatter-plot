@@ -1,12 +1,11 @@
 <template $name="vega-chart" $render="none" spec:urljson="">
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lodash@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-tooltip@0.27"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4"></script>
   <script $onrender>
     /* globals vega, vegaLite, _ */
     let node = this
-   
     // If there's no spec, treat it as empty spec and process it from
     if (!spec || !spec.$schema)
       return
@@ -38,20 +37,24 @@
       newSpec = vegaLite.compile(newSpec).spec
 
     // Add signals
-    if (newSpec.uifactoryConfig) {
-      let signals = newSpec.signals = newSpec.signals || []
+     if (newSpec.uifactoryConfig) {
+      let signals = newSpec.signals || []
       newSpec.uifactoryConfig.forEach(config => {
         // TODO: Avoid lodash
-        let insertion = _.get(newSpec, config.insert)
-        let signalMap = uifactory.vegaChart.types[config.type] || []
-        signalMap.forEach(row => {
-          let name = config.prefix + row.name.charAt(0).toUpperCase() + row.name.substr(1)
-          let value = row.name in insertion ? insertion[row.name] : row.value
-          if (typeof value == 'object' && value && 'value' in value)
-            value = value.value
-          signals.push({ name, value, type: row.type })
-          insertion[row.name] = { signal: name }
-        })
+        if (config.type == 'custom') {
+          _.set(newSpec, config.insert, node.$data[config.attr])
+        }
+        else if (config.type in uifactory.vegaChart.types) {
+          let insertion = _.get(newSpec, config.insert)
+          uifactory.vegaChart.types[config.type].forEach(row => {
+            let name = config.prefix + row.name.charAt(0).toUpperCase() + row.name.substr(1)
+            let value = row.name in insertion ? insertion[row.name] : row.value
+            if (typeof value == 'object' && value && 'value' in value)
+              value = value.value
+            signals.push({ name, value, type: row.type })
+            insertion[row.name] = { signal: name }
+          })
+        }
       })
     }
 
