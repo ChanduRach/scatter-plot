@@ -6,12 +6,20 @@
   "padding": 20,
   "autosize": "none",
 
-  "uifactoryConfig": [{
-    "$comment": "Configuration to make it work with uifactory",
-    "type": "mark.symbol",
-    "prefix": "mark",
-    "insert": "marks[0].encode.enter"
-  }],
+  "uifactoryConfig": [
+    {
+      "$comment": "Configuration to make it work with uifactory",
+      "type": "mark.symbol",
+      "prefix": "mark",
+      "insert": "marks[0].encode.enter"
+    },
+    {
+      "$comment": "Configuration to pass custom signals for the specs",
+      "type": "custom",
+      "attr": "markTooltip",
+      "insert": "marks[0].encode.update.tooltip.signal"
+    }
+  ],
 
   "data": [{
       "$comment": "Transform data into Tree format",
@@ -242,7 +250,7 @@
             "signal": "markStroke"
           },
           "tooltip": {
-            "signal": "{'Name': datum[markTooltip], 'Depth': datum.depth}"
+            "signal": "markTooltip"
           },
           "strokeWidth": {
             "signal": "markStrokeWidth"
