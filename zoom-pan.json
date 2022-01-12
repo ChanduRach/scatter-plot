@@ -6,15 +6,13 @@
   "padding": 30,
   "overflow": "visible",
   "autosize": "pad",
-  "uifactoryConfig": [{
-
-    "type": "mark.symbol",
-
-    "prefix": "mark",
-
-    "insert": "marks[0].marks[3].encode.enter"
-
-  }],
+  "uifactoryConfig": [
+    {
+      "type": "mark.symbol",
+      "prefix": "mark",
+      "insert": "marks[0].marks[3].encode.enter"
+    }
+  ],
   "layout": {
     "bounds": "flush",
     "padding": 30
@@ -53,12 +51,12 @@
     {
       "$comment": "This signal is used to define color scheme",
       "name": "markColorScheme",
-      "value":null
+      "value": null
     },
     {
       "$comment": "This signal is used to define marks text",
       "name": "markLabel",
-      "value":null
+      "value": null
     },
     {
       "name": "xrange",
@@ -74,7 +72,7 @@
       "value": true,
       "on": [
         {
-          "events": "mouseup[!event.item]",
+          "events": "mouseup[!event.item],touchstart[!event.item]",
           "update": "true",
           "force": true
         }
@@ -85,7 +83,7 @@
       "value": false,
       "on": [
         {
-          "events": "@legendSymbol:click",
+          "events": "@legendSymbol:click,@legendSymbol:touchstart",
           "update": "event.shiftKey",
           "force": true
         }
@@ -96,7 +94,7 @@
       "value": null,
       "on": [
         {
-          "events": "@legendSymbol:click",
+          "events": "@legendSymbol:click,@legendSymbol:touchstart",
           "update": "{value: datum.value}",
           "force": true
         }
@@ -290,7 +288,7 @@
           "update": "[anchor[0] + (xdom[0] - anchor[0]) * zoom, anchor[0] + (xdom[1] - anchor[0]) * zoom]"
         },
         {
-          "events": "dblclick",
+          "events": "dblclick,touchstart",
           "update": "[0,250]"
         }
       ]
@@ -312,16 +310,18 @@
           "update": "[anchor[1] + (ydom[0] - anchor[1]) * zoom, anchor[1] + (ydom[1] - anchor[1]) * zoom]"
         },
         {
-          "events": "dblclick",
+          "events": "dblclick,touchstart",
           "update": "[0,50]"
         }
       ]
     },
     {
-      "name": "markTrendLineMethod", "value": "linear"
+      "name": "markTrendLineMethod",
+      "value": "linear"
     },
     {
-      "name": "markTrendLineGroupby", "value": "none"
+      "name": "markTrendLineGroupby",
+      "value": "none"
     }
   ],
   "data": [
@@ -333,12 +333,16 @@
       "transform": [
         {
           "type": "extent",
-          "field": {"signal": "xField"},
+          "field": {
+            "signal": "xField"
+          },
           "signal": "xext"
         },
         {
           "type": "extent",
-          "field": {"signal": "yField"},
+          "field": {
+            "signal": "yField"
+          },
           "signal": "yext"
         },
         {
@@ -369,10 +373,11 @@
       ]
     },
     {
-      "$comment":"Returns number of null values from data set",
+      "$comment": "Returns number of null values from data set",
       "name": "nullXY",
       "source": "source",
-      "transform": [{
+      "transform": [
+        {
           "type": "filter",
           "expr": "datum[xField] == 0 && datum[yField] == 0"
         },
@@ -387,12 +392,27 @@
       "transform": [
         {
           "type": "regression",
-          "groupby": [{"signal": "markTrendLineGroupby === 'genre' ? 'Name' : 'foo'"}],
-          "method": {"signal": "markTrendLineMethod"},
-          "extent": {"signal": "domain('x')"},
-          "x": {"signal": "xField"},
-          "y": {"signal": "yField"},
-          "as": ["u", "v"]
+          "groupby": [
+            {
+              "signal": "markTrendLineGroupby === 'genre' ? 'Name' : 'foo'"
+            }
+          ],
+          "method": {
+            "signal": "markTrendLineMethod"
+          },
+          "extent": {
+            "signal": "domain('x')"
+          },
+          "x": {
+            "signal": "xField"
+          },
+          "y": {
+            "signal": "yField"
+          },
+          "as": [
+            "u",
+            "v"
+          ]
         }
       ]
     }
@@ -428,7 +448,9 @@
       "name": "color",
       "type": "ordinal",
       "range": {
-        "scheme": {"signal": "markColorScheme"}
+        "scheme": {
+          "signal": "markColorScheme"
+        }
       },
       "domain": {
         "data": "source",
@@ -493,21 +515,26 @@
           "groupby": "facet"
         }
       },
-
-      "sort": {"field": "datum.Origin", "order": "ascending"},
-
+      "sort": {
+        "field": "datum.Origin",
+        "order": "ascending"
+      },
       "title": {
-        "text": {"signal": "datum.origin"},
+        "text": {
+          "signal": "datum.origin"
+        },
         "frame": "group"
       },
-
       "encode": {
         "update": {
-          "width": {"signal": "width"},
-          "height": {"signal": "height"}
+          "width": {
+            "signal": "width"
+          },
+          "height": {
+            "signal": "height"
+          }
         }
       },
-
       "axes": [
         {
           "scale": "x",
@@ -515,7 +542,9 @@
           "domain": false,
           "orient": "bottom",
           "tickCount": 5,
-          "title": {"signal": "xField"}
+          "title": {
+            "signal": "xField"
+          }
         },
         {
           "scale": "y",
@@ -523,14 +552,16 @@
           "domain": false,
           "orient": "left",
           "titlePadding": 5,
-          "title": {"signal": "yField"}
+          "title": {
+            "signal": "yField"
+          }
         }
       ],
-
       "marks": [
         {
           "name": "marks",
           "type": "symbol",
+          "clip": true,
           "from": {
             "data": "facet"
           },
@@ -538,21 +569,29 @@
             "enter": {
               "x": {
                 "scale": "x",
-                "field": {"signal": "xField"}
+                "field": {
+                  "signal": "xField"
+                }
               },
               "y": {
                 "scale": "y",
-                "field": {"signal": "yField"}
+                "field": {
+                  "signal": "yField"
+                }
               }
             },
             "update": {
               "x": {
                 "scale": "x",
-                "field": {"signal": "xField"}
+                "field": {
+                  "signal": "xField"
+                }
               },
               "y": {
                 "scale": "y",
-                "field": {"signal": "yField"}
+                "field": {
+                  "signal": "yField"
+                }
               },
               "href": {
                 "signal": "'https://www.google.com/search?q=' + datum.Name",
@@ -561,9 +600,9 @@
               "tooltip": {
                 "signal": "{'Name': datum.Name,'Year':datum.Year,'Origin':((datum.Origin))}"
               },
-             "shape":{
-               "signal": "markShape"
-             },
+              "shape": {
+                "signal": "markShape"
+              },
               "strokeWidth": {
                 "value": 1
               },
@@ -590,7 +629,9 @@
                 "signal": "markFill"
               },
               "hover": {
-                "opacity": {"value": 0.5}
+                "opacity": {
+                  "value": 0.5
+                }
               }
             }
           }
@@ -598,30 +639,51 @@
         {
           "$comment": "This mark is used to draw connected lines across the marks ",
           "type": "line",
+          "clip": true,
           "from": {
             "data": "facet"
           },
           "encode": {
             "update": {
-              "x": {"scale": "x", "field": {"signal": "xField"}},
-              "y": {"scale": "y", "field": {"signal": "yField"}},
-              "stroke": {"value": "steelblue"},
-              "opacity": { "signal": "markLineOpacity"},
-              "strokeWidth": {"value": 0.5}
+              "x": {
+                "scale": "x",
+                "field": {
+                  "signal": "xField"
+                }
+              },
+              "y": {
+                "scale": "y",
+                "field": {
+                  "signal": "yField"
+                }
+              },
+              "stroke": {
+                "value": "steelblue"
+              },
+              "opacity": {
+                "signal": "markLineOpacity"
+              },
+              "strokeWidth": {
+                "value": 0.5
+              }
             }
           }
         },
-        { 
-          "$comment":"Text mark is used to show marks label based on column names",
+        {
+          "$comment": "Text mark is used to show marks label based on column names",
           "type": "text",
+          "clip": true,
           "from": {
             "data": "facet"
           },
           "interactive": false,
           "encode": {
             "enter": {
-             
-              "font": [{ "value": "Open Sans"} ]
+              "font": [
+                {
+                  "value": "Open Sans"
+                }
+              ]
             },
             "update": {
               "text": {
@@ -638,11 +700,15 @@
               ],
               "x": {
                 "scale": "x",
-                "field": {"signal": "xField"}
+                "field": {
+                  "signal": "xField"
+                }
               },
               "y": {
                 "scale": "y",
-                "field": {"signal": "yField"}
+                "field": {
+                  "signal": "yField"
+                }
               },
               "align": {
                 "value": "center"
@@ -653,15 +719,17 @@
               "fontSize": {
                 "value": 8
               },
-              "limit":{
-                "value":20
+              "limit": {
+                "value": 20
               },
-              "fill":{
-                "value":"grey"
+              "fill": {
+                "value": "grey"
               }
             },
             "hover": {
-              "opacity": {"value": 0.5}
+              "opacity": {
+                "value": 0.5
+              }
             }
           }
         },
@@ -721,9 +789,9 @@
               }
             }
           }
-        }, 
+        },
         {
-          "$comment":"Draws trend line",
+          "$comment": "Draws trend line",
           "type": "group",
           "from": {
             "facet": {
@@ -735,20 +803,27 @@
           "marks": [
             {
               "type": "line",
-              "from": {"data": "curve"},
+              "from": {
+                "data": "curve"
+              },
               "encode": {
                 "enter": {
-                  "x": {"scale": "x", "field": "u"},
-                  "y": {"scale": "y", "field": "v"},
-                  "stroke": {"value": "firebrick"}
+                  "x": {
+                    "scale": "x",
+                    "field": "u"
+                  },
+                  "y": {
+                    "scale": "y",
+                    "field": "v"
+                  },
+                  "stroke": {
+                    "value": "firebrick"
+                  }
                 }
               }
             }
           ]
         },
-       
-        
-      
         {
           "type": "rect",
           "name": "brush",
@@ -832,7 +907,6 @@
         }
       ]
     },
-    
     {
       "type": "text",
       "interactive": false,

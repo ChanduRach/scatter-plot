@@ -7,11 +7,11 @@
         var dragFlag = false;
 
         var margin = {
-                top: 10,
-                right: 10,
-                bottom: 10,
-                left: 10
-            },
+            top: 10,
+            right: 10,
+            bottom: 10,
+            left: 10
+        },
             width = width - margin.left - margin.right,
             height = height - margin.top - margin.bottom;
 
@@ -27,6 +27,7 @@
             .attr("height", height + margin.top + margin.bottom)
             .attr("preserveAspectRatio", "xMinYMin meet")
             .attr("viewBox", "0 0 1200 100")
+            .style('padding','0rem 1rem')
             .append("g")
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
@@ -53,7 +54,7 @@
                 return {
                     source: nodeMap[x.source],
                     target: nodeMap[x.target],
-                    value: x.value                   
+                    value: x.value
                 };
             });
 
@@ -72,8 +73,8 @@
 
             graph.links.forEach(function (e) {
                 e.source = graph.nodes.filter(function (n) {
-                        return n.name === e.source;
-                    })[0],
+                    return n.name === e.source;
+                })[0],
 
                     e.target = graph.nodes.filter(function (n) {
                         return n.name === e.target;
@@ -145,19 +146,19 @@
             //         return d.source.name.name + " → " +
             //             d.target.name.name + "\n" + format(d.value);
             //     });
-            link.on("mouseover", function(d) {   
-            div.transition()        
-                .duration(100)      
-                .style("opacity", .9);      
-            div .html("<b>" + d.source.name.name + "</b> → <b>"  + d.target.name.name + "</b><br/>" + format(d.value))  
-                .style("left", (d3.event.pageX) + "px")     
-                .style("top", (d3.event.pageY - 28) + "px");    
-            })                  
-        .on("mouseout", function(d) {       
-            div.transition()        
-                .duration(500)      
-                .style("opacity", 0);   
-        });
+            link.on("mouseover", function (d) {
+                div.transition()
+                    .duration(100)
+                    .style("opacity", .9);
+                div.html("<b>" + d.source.name.name + "</b> → <b>" + d.target.name.name + "</b><br/>" + format(d.value))
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            })
+                .on("mouseout", function (d) {
+                    div.transition()
+                        .duration(100)
+                        .style("opacity", 0);
+                });
 
             var node = svg.append("g").selectAll(".node")
                 .data(nodes)
@@ -186,7 +187,7 @@
                 .attr("width", sankey.nodeWidth())
                 .style("fill", function (d) {
                     if (nodeFill == "") {
-                    return d.name.nodeColorTarget.replace(/ .*/, "");
+                        return d.name.nodeColorTarget.replace(/ .*/, "");
                     } else {
                         return d.color = nodeFill
                     }
@@ -195,9 +196,23 @@
                     return d3.rgb(d.color).darker(2);
                 })
                 .attr("fill-opacity", nodeFillOpacity)
-                .append("title")
-                .text(function (d) {
-                    return d.name.name + "\n" + format(d.value);
+            // .append("title")
+            // .text(function (d) {
+            //     return d.name.name + "\n" + format(d.value);
+            // });
+
+            node.on("mouseover", function (d) {
+                div.transition()
+                    .duration(100)
+                    .style("opacity", .9);
+                div.html("<b>" + d.name.name + "</b>:<br/>" + format(d.value))
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            })
+                .on("mouseout", function (d) {
+                    div.transition()
+                        .duration(500)
+                        .style("opacity", 0);
                 });
 
 
@@ -222,15 +237,15 @@
 
             var legend_keys = graph.nodes
 
-            var lineLegend,entries = "";
+            var lineLegend, entries = "";
             d3.selectAll(".collapseLegend").remove();
 
             var addIcon = d3.select(e.target).append('div').html('-')
-            addIcon.attr('onclick','hideLegend(event)')
-            .attr('class','collapseLegend')
-            .style('font-size','2rem')
-            .style('margin','1rem')
-            .style('cursor','pointer')
+            addIcon.attr('onclick', 'hideLegend(event)')
+                .attr('class', 'collapseLegend')
+                .style('font-size', '2rem')
+                .style('margin', '0rem 2rem')
+                .style('cursor', 'pointer')
 
             d3.selectAll("legend").remove();
             lineLegend = d3.select(e.target).append('legend');
@@ -263,7 +278,7 @@
                 })
                 .attr("width", 20).attr("height", 20)
                 .on('mouseover', highlight)
-               // .attr('title','o')
+                // .attr('title','o')
                 .on('mouseout', removeHighlight)
 
 
