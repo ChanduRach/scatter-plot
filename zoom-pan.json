@@ -657,9 +657,16 @@
                   "signal": "yField"
                 }
               },
-              "stroke": {
-                "value": "steelblue"
-              },
+              "stroke": [
+                {
+                  "test": "(!domain || inrange(datum[xField], domain)) && (!length(data('selected')) || indata('selected', 'value', datum.Origin))",
+                  "scale": "color",
+                  "field": "Origin"
+                },
+                {
+                  "value": "#fff"
+                }
+              ],
               "opacity": {
                 "signal": "markLineOpacity"
               },
