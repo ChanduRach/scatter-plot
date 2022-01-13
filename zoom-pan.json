@@ -6,19 +6,27 @@
   "padding": 30,
   "overflow": "visible",
   "autosize": "pad",
-  "uifactoryConfig": [{
-
-    "type": "mark.symbol",
-
-    "prefix": "mark",
-
-    "insert": "marks[0].marks[3].encode.enter"
-
-  }],
-  "layout": {
-    "bounds": "flush",
-    "padding": 30
-  },
+  "uifactoryConfig": [
+    {
+      "type": "mark.symbol",
+      "prefix": "mark",
+      "insert": "marks[0].marks[0].encode.enter"
+    },
+    {
+      "$comment": "Configuration to pass custom signals for the specs",
+      "type": "custom",
+      "attr": "markTooltip",
+      "insert": "marks[0].marks[0].encode.update.tooltip.signal"
+    },
+    {
+      "$comment": "Configuration to pass custom signals for the multi series",
+      "type": "custom",
+      "attr": "markLayout",
+      "insert":"layout"
+    }
+  ],
+  "layout": {"signal": "markLayout"},
+   
   "signals": [
     {
       "$comment": "This signal is used define data set",
@@ -58,12 +66,22 @@
     {
       "$comment": "This signal is used to define color scheme",
       "name": "markColorScheme",
-      "value":null
+      "value": null
     },
     {
       "$comment": "This signal is used to define marks text",
       "name": "markLabel",
-      "value":null
+      "value": null
+    },
+    {
+      "$comment": "This signal is used to define tooltip details",
+      "name": "markTooltip",
+      "value": null
+    },
+    {
+      "$comment":"Layout signal",
+      "name": "markLayout",
+      "value":  null
     },
     {
       "name": "_xrange",
@@ -154,7 +172,7 @@
       ]
     },
     {
-      "$comment":"current co-ordinates for x and y axis",
+      "$comment": "current co-ordinates for x and y axis",
       "name": "_xcur",
       "value": null,
       "on": [
@@ -208,7 +226,7 @@
       ]
     },
     {
-      "$comment":"used for zoom and pan",
+      "$comment": "used for zoom and pan",
       "name": "anchor",
       "value": [
         0,
@@ -248,7 +266,7 @@
       ]
     },
     {
-      "$comment":"used for zoom and pan",
+      "$comment": "used for zoom and pan",
       "name": "_dist1",
       "value": 0,
       "on": [
@@ -268,7 +286,7 @@
       ]
     },
     {
-      "$comment":"used for zoom and pan",
+      "$comment": "used for zoom and pan",
       "name": "_dist2",
       "value": 0,
       "on": [
@@ -327,11 +345,13 @@
       ]
     },
     {
-      "$comment":"Defines trend line method",
-      "name": "markTrendLineMethod", "value": "linear"
+      "$comment": "Defines trend line method",
+      "name": "markTrendLineMethod",
+      "value": "linear"
     },
     {
-      "name": "markTrendLineGroupby", "value": "none"
+      "name": "markTrendLineGroupby",
+      "value": "none"
     }
   ],
   "data": [
@@ -343,12 +363,16 @@
       "transform": [
         {
           "type": "extent",
-          "field": {"signal": "xField"},
+          "field": {
+            "signal": "xField"
+          },
           "signal": "xext"
         },
         {
           "type": "extent",
-          "field": {"signal": "yField"},
+          "field": {
+            "signal": "yField"
+          },
           "signal": "yext"
         },
         {
@@ -379,10 +403,11 @@
       ]
     },
     {
-      "$comment":"Returns number of null values from data set",
+      "$comment": "Returns number of null values from data set",
       "name": "nullXY",
       "source": "source",
-      "transform": [{
+      "transform": [
+        {
           "type": "filter",
           "expr": "datum[xField] == 0 && datum[yField] == 0"
         },
@@ -397,12 +422,27 @@
       "transform": [
         {
           "type": "regression",
-          "groupby": [{"signal": "markTrendLineGroupby"}],
-          "method": {"signal": "markTrendLineMethod"},
-          "extent": {"signal": "domain('x')"},
-          "x": {"signal": "xField"},
-          "y": {"signal": "yField"},
-          "as": ["u", "v"]
+          "groupby": [
+            {
+              "signal": "markTrendLineGroupby"
+            }
+          ],
+          "method": {
+            "signal": "markTrendLineMethod"
+          },
+          "extent": {
+            "signal": "domain('x')"
+          },
+          "x": {
+            "signal": "xField"
+          },
+          "y": {
+            "signal": "yField"
+          },
+          "as": [
+            "u",
+            "v"
+          ]
         }
       ]
     }
@@ -438,7 +478,9 @@
       "name": "color",
       "type": "ordinal",
       "range": {
-        "scheme": {"signal": "markColorScheme"}
+        "scheme": {
+          "signal": "markColorScheme"
+        }
       },
       "domain": {
         "data": "source",
@@ -448,7 +490,7 @@
   ],
   "legends": [
     {
-      "$comment":"Legends visualize scale mapping for visual values",
+      "$comment": "Legends visualize scale mapping for visual values",
       "stroke": "color",
       "title": "Origin",
       "encode": {
@@ -496,30 +538,35 @@
   ],
   "marks": [
     {
-      "$comment":"This marks used for containers for scatter plot",
+      "$comment": "This marks used for containers for scatter plot",
       "type": "group",
       "from": {
         "facet": {
           "name": "facet",
           "data": "source",
-          "groupby": "facet"
+          "groupby": "Origin"
         }
       },
-
-      "sort": {"field": "datum.Origin", "order": "ascending"},
-
+      "sort": {
+        "field": "datum.Origin",
+        "order": "ascending"
+      },
       "title": {
-        "text": {"signal": "datum.origin"},
+        "text": {
+          "signal": "datum.origin"
+        },
         "frame": "group"
       },
-
       "encode": {
         "update": {
-          "width": {"signal": "width"},
-          "height": {"signal": "height"}
+          "width": {
+            "signal": "width"
+          },
+          "height": {
+            "signal": "height"
+          }
         }
       },
-
       "axes": [
         {
           "scale": "x",
@@ -527,7 +574,9 @@
           "domain": false,
           "orient": "bottom",
           "tickCount": 5,
-          "title": {"signal": "xField"}
+          "title": {
+            "signal": "xField"
+          }
         },
         {
           "scale": "y",
@@ -535,16 +584,17 @@
           "domain": false,
           "orient": "left",
           "titlePadding": 5,
-          "title": {"signal": "yField"}
+          "title": {
+            "signal": "yField"
+          }
         }
       ],
-
       "marks": [
         {
-          "$comment":"This mark is used to generate shape for scatter plot points",
+          "$comment": "This mark is used to generate shape for scatter plot points",
           "name": "marks",
           "type": "symbol",
-          "clip":true,
+          "clip": true,
           "from": {
             "data": "facet"
           },
@@ -552,32 +602,40 @@
             "enter": {
               "x": {
                 "scale": "x",
-                "field": {"signal": "xField"}
+                "field": {
+                  "signal": "xField"
+                }
               },
               "y": {
                 "scale": "y",
-                "field": {"signal": "yField"}
+                "field": {
+                  "signal": "yField"
+                }
               }
             },
             "update": {
               "x": {
                 "scale": "x",
-                "field": {"signal": "xField"}
+                "field": {
+                  "signal": "xField"
+                }
               },
               "y": {
                 "scale": "y",
-                "field": {"signal": "yField"}
+                "field": {
+                  "signal": "yField"
+                }
               },
               "href": {
                 "signal": "'https://www.google.com/search?q=' + datum.Name",
                 "type": "nominal"
               },
               "tooltip": {
-                "signal": "{'Name': datum.Name,'Year':datum.Year,'Origin':((datum.Origin))}"
+                "signal": "markTooltip"
               },
-             "shape":{
-               "signal": "markShape"
-             },
+              "shape": {
+                "signal": "markShape"
+              },
               "strokeWidth": {
                 "value": 1
               },
@@ -604,7 +662,9 @@
                 "signal": "markFill"
               },
               "hover": {
-                "opacity": {"value": 0.5}
+                "opacity": {
+                  "value": 0.5
+                }
               }
             }
           }
@@ -612,32 +672,56 @@
         {
           "$comment": "This mark is used to draw connected lines across the marks ",
           "type": "line",
-          "clip":true,
+          "clip": true,
           "from": {
             "data": "facet"
           },
           "encode": {
             "update": {
-              "x": {"scale": "x", "field": {"signal": "xField"}},
-              "y": {"scale": "y", "field": {"signal": "yField"}},
-              "stroke": {"value": "steelblue"},
-              "opacity": { "signal": "markLineOpacity"},
-              "strokeWidth": {"value": 0.5}
+              "x": {
+                "scale": "x",
+                "field": {
+                  "signal": "xField"
+                }
+              },
+              "y": {
+                "scale": "y",
+                "field": {
+                  "signal": "yField"
+                }
+              },
+              "stroke": [{
+                "test": "(!domain || inrange(datum[xField], domain)) && (!length(data('selected')) || indata('selected', 'value', datum.Origin))",
+                "scale": "color",
+                "field": "Origin"
+              },
+              {
+                "value": "#fff"
+              }],
+              "opacity": {
+                "signal": "markLineOpacity"
+              },
+              "strokeWidth": {
+                "value": 0.5
+              }
             }
           }
         },
-        { 
-          "$comment":"Text mark is used to show marks label based on column names",
+        {
+          "$comment": "Text mark is used to show marks label based on column names",
           "type": "text",
-          "clip":true,
+          "clip": true,
           "from": {
             "data": "facet"
           },
           "interactive": false,
           "encode": {
             "enter": {
-             
-              "font": [{ "value": "Open Sans"} ]
+              "font": [
+                {
+                  "value": "Open Sans"
+                }
+              ]
             },
             "update": {
               "text": {
@@ -654,11 +738,15 @@
               ],
               "x": {
                 "scale": "x",
-                "field": {"signal": "xField"}
+                "field": {
+                  "signal": "xField"
+                }
               },
               "y": {
                 "scale": "y",
-                "field": {"signal": "yField"}
+                "field": {
+                  "signal": "yField"
+                }
               },
               "align": {
                 "value": "center"
@@ -669,15 +757,17 @@
               "fontSize": {
                 "value": 8
               },
-              "limit":{
-                "value":20
+              "limit": {
+                "value": 20
               },
-              "fill":{
-                "value":"grey"
+              "fill": {
+                "value": "grey"
               }
             },
             "hover": {
-              "opacity": {"value": 0.5}
+              "opacity": {
+                "value": 0.5
+              }
             }
           }
         },
@@ -711,7 +801,7 @@
           }
         },
         {
-          "$comment":"this mark is used to brush the selected area",
+          "$comment": "this mark is used to brush the selected area",
           "type": "rect",
           "interactive": false,
           "encode": {
@@ -738,9 +828,9 @@
               }
             }
           }
-        }, 
+        },
         {
-          "$comment":"Draws trend line",
+          "$comment": "Draws trend line",
           "type": "group",
           "from": {
             "facet": {
@@ -752,25 +842,34 @@
           "marks": [
             {
               "type": "line",
-              "from": {"data": "curve"},
+              "from": {
+                "data": "curve"
+              },
               "encode": {
                 "enter": {
-                  "x": {"scale": "x", "field": "u"},
-                  "y": {"scale": "y", "field": "v"},
-                  "stroke": {"value": "firebrick"}
+                  "x": {
+                    "scale": "x",
+                    "field": "u"
+                  },
+                  "y": {
+                    "scale": "y",
+                    "field": "v"
+                  },
+                  "stroke": {
+                    "value": "firebrick"
+                  }
                 },
-                "update":{
-                  "opacity": {"signal": "markShowTrendLine ? 1 : 0" }
+                "update": {
+                  "opacity": {
+                    "signal": "markShowTrendLine ? 1 : 0"
+                  }
                 }
               }
             }
           ]
         },
-       
-        
-      
         {
-          "$comment":"this mark is used to brush the selected area",
+          "$comment": "this mark is used to brush the selected area",
           "type": "rect",
           "name": "brush",
           "encode": {
@@ -796,7 +895,7 @@
           }
         },
         {
-          "$comment":"this mark is used to brush the selected area",
+          "$comment": "this mark is used to brush the selected area",
           "type": "rect",
           "interactive": false,
           "encode": {
@@ -825,7 +924,7 @@
           }
         },
         {
-          "$comment":"this mark is used to brush the selected area",
+          "$comment": "this mark is used to brush the selected area",
           "type": "rect",
           "interactive": false,
           "encode": {
@@ -855,9 +954,8 @@
         }
       ]
     },
-    
     {
-      "$comment":"shows number of null values as a text",
+      "$comment": "shows number of null values as a text",
       "type": "text",
       "interactive": false,
       "from": {
