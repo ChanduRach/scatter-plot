@@ -1,8 +1,8 @@
-<template $name="sankey-diagram" width:number="" height:number="" data-set:url="" node-text-anchor=""
+<template $name="sankey-diagram" chart-width:number="" chart-height:number="" data-set:string="" node-text-anchor=""
     node-width:number="" node-padding:number="" node-fill-opacity:number="" path-stroke="" stroke-dasharray:number=""
-    node-fill="" color-palette:string="" color-scale="" label-color:string="" label-opacity:number="">
+    node-fill="" color-palette:string="" color-scale="" label-color:string="" label-opacity:number="" node-border-width:string="">
 
-    <script onrender>
+    <script $onrender>
         var units = "Widgets";
         var dragFlag = false;
 
@@ -12,8 +12,9 @@
             bottom: 10,
             left: 10
         },
-            width = width - margin.left - margin.right,
-            height = height - margin.top - margin.bottom;
+            
+            width = chartWidth - margin.left - margin.right,
+            height = chartHeight - margin.top - margin.bottom;
 
         var formatNumber = d3.format(",.0f"),
             format = function (d) {
@@ -21,7 +22,7 @@
             },
             //color =d3.scale.category10().domain([0, 0]).range(colorRanges)
             // color = d3.scale.category10().range(['#2A71A4','#70C2FE','#DB6C04','#FECA98','#8B1680','#ED39DB'])
-            color = eval(colorScale)
+            color = eval(colorScale)    
         var svg = d3.select(e.target).append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -45,7 +46,9 @@
         var path = sankey.link();
 
         var data = {};
-        d3.json(e.target.dataSet.url, function (error, graph) {
+            
+        if(e.target.dataSet != null){
+        d3.json(e.target.dataSet, function (error, graph) {
             var nodeMap = {};
             graph.nodes.forEach(function (x) {
                 nodeMap[x.name] = x;
@@ -92,7 +95,7 @@
 
             // updateSankey(graph, nodeTextAnchor, nodeFillOpacity)
         });
-
+    }
         function update() {
 
             nodes = data.nodes.filter(function (d) {
@@ -196,6 +199,7 @@
                     return d3.rgb(d.color).darker(2);
                 })
                 .attr("fill-opacity", nodeFillOpacity)
+                .attr("stroke-width", nodeBorderWidth)
             // .append("title")
             // .text(function (d) {
             //     return d.name.name + "\n" + format(d.value);
@@ -253,7 +257,7 @@
 
             entries = lineLegend.selectAll('svg').data(legend_keys)
                 .enter().append('svg')
-                .attr('width', '200px')
+                .attr('width', '250px')
                 .attr('height', '50px')
                 .append('g')
                 .attr("class", "lineLegend")

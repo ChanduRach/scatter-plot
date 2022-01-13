@@ -13,10 +13,11 @@
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,300" rel="stylesheet" type="text/css">
 
   <style>
-    body{
-      font-family:'Open Sans';
+    body {
+      font-family: 'Open Sans';
       font-size: 12px;
     }
+
     .node rect {
       cursor: move;
       shape-rendering: crispEdges;
@@ -36,73 +37,100 @@
       stroke-opacity: .9;
     }
 
-    legend{
+    legend {
       display: flex;
       display: flex;
-      width: 800px;
-    /* grid-template-columns: repeat(1, 1fr); */
-    /* width: 100%; */
-    flex-flow: wrap;
-    cursor: pointer;
-}
-div.tooltip{
-  position: absolute;           
-  height: auto;                 
-  padding: 4px;             
-    padding: 8px;
-    /* position: fixed; */
-    /* z-index: 1000; */
-    /* font-family: sans-serif; */
-    font-size: 11px;
-    border-radius: 3px;
-    box-shadow: 2px 2px 4px rgb(0 0 0 / 10%);
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1px solid #d9d9d9;
-    color: black; 
-}
+      width: 100%;
+      /* grid-template-columns: repeat(1, 1fr); */
+      /* width: 100%; */
+      flex-flow: wrap;
+      cursor: pointer;
+    }
+
+    div.tooltip {
+      position: absolute;
+      height: auto;
+      padding: 4px;
+      padding: 8px;
+      pointer-events: none;
+      /* position: fixed; */
+      /* z-index: 1000; */
+      font-size: 11px;
+      border-radius: 3px;
+      box-shadow: 2px 2px 4px rgb(0 0 0 / 10%);
+      background-color: rgba(255, 255, 255, 0.95);
+      border: 1px solid #d9d9d9;
+      color: black;
+    }
+
     @media only screen and (max-width: 768px) {
       legend {
-      width: 200px;
+        width: 200px;
       }
-      sankey-diagram > svg{
-        width:-webkit-fill-available;
+
+      .node text {
+        font-size: 14px;
+        opacity: 1;
+      }
+
+      sankey-diagram>svg {
+        width: -webkit-fill-available;
         height: auto;
       }
     }
 
+    @media only screen and (min-device-width: 768px) {
+      legend {
+        width: 100%;
+      }
+    }
+
+    @media screen and (max-width: 1900px) and (min-width: 1900px) {
+      legend {
+        display: grid;
+         grid-template-columns: repeat(5, 15rem);
+      }
+}
+@media screen and (min-width: 2560px){
+      legend {
+        display: grid;
+         grid-template-columns: repeat(5, 15rem);
+      }
+}
+
+    .show {
+      opacity: 0;
+    }
+
+    legend {
+      opacity: 1;
+      transition: opacity 0.6s linear;
+    }
   </style>
 </head>
+
 <body>
- 
-  <sankey-diagram width="1200" 
-  height="740" 
-  data-set="data.json" 
-  path-stroke=""
-  node-text-anchor="start" 
-  node-width="35"
-  node-padding="10" 
-  node-fill=""
-  node-fill-opacity="0.9"
-  label-color="black"
-  label-opacity="0.9"
-  stroke-dasharray="0"
-  color-scale="d3.scale.category10()"
- >
-</sankey-diagram>
-<!-- <div onclick="hideLegend(event)" style="font-size: 2rem;margin:1rem;cursor: pointer;">-</div> -->
+
+  <sankey-diagram chart-width="1200" chart-height="740" data-set="data.json" path-stroke="" node-text-anchor="start"
+    node-width="35" node-padding="10" node-border-width="1px" node-fill="" node-fill-opacity="0.9" label-color="black"
+    label-opacity="0.9" stroke-dasharray="0" color-scale="d3.scale.category10()">
+  </sankey-diagram>
+  <!-- <div onclick="hideLegend(event)" style="font-size: 2rem;margin:1rem;cursor: pointer;">-</div> -->
 </body>
 <script>
-var flag = true
-  function hideLegend(e){
-    if(flag){
-            document.querySelector('legend').style.display="none"
-            e.target.innerHTML = "+"
-            flag = false
-        }else{
-            document.querySelector('legend').style.display="block"
-            e.target.innerHTML = "-"
-            flag = true
-        }    
+  var flag = true
+  function hideLegend(e) {
+
+    if (flag) {
+      document.querySelector('legend').classList.toggle('show')
+      e.target.innerHTML = "+"
+      flag = false
+    } else {
+      document.querySelector('legend').classList.toggle('show')
+      e.target.innerHTML = "-"
+      flag = true
+    }
   }
 </script>
+
 </html>
