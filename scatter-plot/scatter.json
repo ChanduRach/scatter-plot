@@ -1,8 +1,8 @@
 {
     "$schema": "https://vega.github.io/schema/vega/v5.json",
     "description": "A scatter plot example with interactive legend and x-axis.",
-    "width": 200,
-    "height": 200,
+    "width": 500,
+    "height": 500,
     "padding": 30,
     "autosize": "pad",
     "uifactoryConfig": [
@@ -508,8 +508,7 @@
                         ],
                         "size": {
                             "value": 64
-                        },
-                        "font": [{ "value": "Open Sans"} ]
+                        }
                     }
                 },
                 "labels": {
@@ -655,7 +654,7 @@
                                 }
                             ],
                             "fill": {
-                                "value": "red"
+                                "signal": "markFill"
                             },
                             "hover": {
                                 "opacity": {
@@ -983,8 +982,7 @@
                     },
                     "fontSize": {
                         "value": 14
-                    },
-                    "font": [{ "value": "Open Sans"} ]
+                    }
                 }
             }
         }

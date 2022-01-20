@@ -13,29 +13,23 @@
 </head>
 <body>
     <script src="https://cdn.jsdelivr.net/npm/lodash/lodash.js"></script>
-    <script src="https://unpkg.com/uifactory" import="vega-chart.html"></script>
-  
-
-    <h4><a href="sankey/index.html">Sankey</a></h4>
-    <h4><a href="waterfall/">Waterfall</a></h4>
-    <h4><a href="packed-circle/">Packed circle</a></h4>
-    <h4><a href="scatter-plot/index.html">Scatter-plot</a></h4>
-
+    <script src="https://unpkg.com/uifactory" import="../vega-chart.html"></script>
 
     <!-- Scatter-plot chart with zoom,pan,tooltip,href,null value indication, color and symbol shape change attrs -->
-    <!-- <vega-chart spec="scatter.json"
+    <vega-chart spec="scatter.json"
     data:urljson="sample.json"
     mark-line-opacity:number=0
     mark-color-scheme:string="scatter-plot"
     mark-shape:string="circle"
-    mark-label:string = "Name"
+    mark-label:string = ""
     mark-fill:string="transparent"
     mark-tooltip:string="{'Name': datum.Name,'Year':datum.Year,'Origin':((datum.Origin))}"
     mark-show-trend-line:boolean = false
     mark-layout:object=''
     >
 </vega-chart>
-    <script src="color-scheme.js"></script> -->
+    <script src="../color-scheme.js"></script>
 </body>
-<!-- mark-layout:object='{"bounds": "flush","padding": 0}' -->
+<!-- mark-layout:object='{"bounds": "flush","padding": 0}'
+mark-label:string = "Name" -->
 </html>
