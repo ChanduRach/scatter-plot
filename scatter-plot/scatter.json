@@ -44,11 +44,6 @@
             "value": "circle"
         },
         {
-            "$comment": "This signal to set mark fill color",
-            "name": "markFill",
-            "value": "transparent"
-        },
-        {
             "$comment": "This signal is set to enable connected lines accross the plots",
             "name": "markLineOpacity",
             "value": null
@@ -485,15 +480,13 @@
         {
             "$comment": "Legends visualize scale mapping for visual values",
             "stroke": "color",
+            "fill": "color",
             "title": "Origin",
             "encode": {
                 "symbols": {
                     "name": "legendSymbol",
                     "interactive": true,
                     "update": {
-                        "fill": {
-                            "value": "transparent"
-                        },
                         "strokeWidth": {
                             "value": 1
                         },
@@ -569,7 +562,9 @@
                     "tickCount": 5,
                     "title": {
                         "signal": "xField"
-                    }
+                    },
+                    "titleFont": "open sans",
+                    "labelFont": "open sans"
                 },
                 {
                     "scale": "y",
@@ -579,7 +574,9 @@
                     "titlePadding": 5,
                     "title": {
                         "signal": "yField"
-                    }
+                    },
+                    "titleFont": "open sans",
+                    "labelFont": "open sans"
                 }
             ],
             "marks": [
@@ -607,7 +604,8 @@
                                 "field": {
                                     "signal": "yField"
                                 }
-                            }
+                            },
+                            "size": {"value": 100}
                         },
                         "update": {
                             "x": {
@@ -653,13 +651,23 @@
                                     "value": "#ccc"
                                 }
                             ],
-                            "fill": {
-                                "signal": "markFill"
-                            },
+                            "fill": [
+                                {
+                                    "test": "(!domain || inrange(datum[xField], domain)) && (!length(data('selected')) || indata('selected', 'value', datum.Origin))",
+                                    "scale": "color",
+                                    "field": "Origin"
+                                },
+                                {
+                                    "value": "#ccc"
+                                }
+                            ],
                             "hover": {
                                 "opacity": {
                                     "value": 0.5
                                 }
+                            },
+                            "font":{
+                                "value": "open sans"
                             }
                         }
                     }
@@ -982,6 +990,9 @@
                     },
                     "fontSize": {
                         "value": 14
+                    },
+                    "font":{
+                        "value": "open sans"
                     }
                 }
             }
