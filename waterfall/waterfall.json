@@ -3,8 +3,8 @@
   "description":"An example of a waterfall chart for given data.",
   "background":"white",
   "padding":5,
-  "width":900,
-  "height":450,
+  "width":600,
+  "height":600,
   "data":[
      {
         "name":"markhoverBar_store"
