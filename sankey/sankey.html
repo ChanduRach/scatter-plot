@@ -262,7 +262,7 @@
                 .append('g')
                 .attr("class", "lineLegend")
                 .attr("transform", function (d, i) {
-                    return "translate(25,10)";
+                    return "translate(30,10)";
                 });
 
             entries.append("text")
@@ -272,19 +272,34 @@
                     return d.name.name;
                 })
                 .attr("x", sankey.nodeWidth() / 2)
-                .attr("transform", "translate(10,10)")
+                .attr("transform", "translate(0,0)")
+                .each(wrap)
+                .append("title")
+                .text(function (d) {
+                    return d.name.name;
+                })
                 .on('mouseover', highlight)
                 .on('mouseout', removeHighlight);
 
-            entries.append("rect")
+            entries.append("circle")
+            .attr('r', 10)
                 .attr("fill", function (d) {
                     return d.name.nodeColorTarget.replace(/ .*/, "");
                 })
                 .attr("width", 20).attr("height", 20)
                 .on('mouseover', highlight)
-                // .attr('title','o')
                 .on('mouseout', removeHighlight)
 
+                function wrap() {
+        var self = d3.select(this),
+            textLength = self.node().getComputedTextLength(),
+            text = self.text();
+            while (textLength > (160 - margin.left - margin.right) && text.length > 0) {
+            text = text.slice(0, -1);
+            self.text(text + '...');
+            textLength = self.node().getComputedTextLength();
+        }
+    }
 
             function highlight(d) {
                 link.filter(function (d2, i) {

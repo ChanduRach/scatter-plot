@@ -482,6 +482,8 @@
             "stroke": "color",
             "fill": "color",
             "title": "Origin",
+            "labelFont":"open sans",
+            "titleFont":"open sans",
             "encode": {
                 "symbols": {
                     "name": "legendSymbol",
