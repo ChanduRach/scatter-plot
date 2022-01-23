@@ -1,10 +1,10 @@
 [
    {
        "Name":"chevrolet chevelle malibu",
-       "Miles_per_Gallon":0,
+       "Miles_per_Gallon":null,
        "Cylinders":0,
        "Displacement":0,
-       "Horsepower":0,
+       "Horsepower":null,
        "Weight_in_lbs":3504,
        "Acceleration":12,
        "Year":"1970-01-01",
@@ -13,10 +13,10 @@
     },
     {
        "Name":"chevrolet chevelle malibu",
-       "Miles_per_Gallon":0,
+       "Miles_per_Gallon":null,
        "Cylinders":0,
        "Displacement":0,
-       "Horsepower":0,
+       "Horsepower":null,
        "Weight_in_lbs":3504,
        "Acceleration":12,
        "Year":"1970-01-01",
