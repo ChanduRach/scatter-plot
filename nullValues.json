@@ -50,7 +50,7 @@
     {
        "Name":"mercury capri 2000",
        "Miles_per_Gallon":23,
-       "Cylinders":4,
+       "Cylinders":null,
        "Displacement":122,
        "Horsepower":86,
        "Weight_in_lbs":2220,
