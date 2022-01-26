@@ -308,7 +308,7 @@
                 },
                 {
                     "events": "dblclick, touchstart",
-                    "update": "[0,250]"
+                    "update": "xext"
                 }
             ]
         },
@@ -330,10 +330,17 @@
                 },
                 {
                     "events": "dblclick, touchstart",
-                    "update": "[0,50]"
+                    "update": "yext"
                 }
             ]
         },
+        {
+
+            "name": "size",
+      
+            "update": "clamp(20 / span(xdom), 1, 1000)"
+      
+          },
         {
             "$comment": "Defines trend line method",
             "name": "markTrendLineMethod",
@@ -342,12 +349,17 @@
         {
             "name": "markTrendLineGroupby",
             "value": "none"
-        }
+        },
+        {   "$comment": "Defines x co-ordinate value for null label",
+            "name": "nullSize", "value": 8 
+        },
+        {  "$comment": "Defines axes gap",
+            "name": "nullGap", "update": "nullSize + 10" }
     ],
     "data": [
         {
             "name": "source",
-            "url": "https://raw.githubusercontent.com/ChanduRach/scatter-plot/master/sample.json",
+            "values": {"signal":"data"},
             "transform": [
                 {
                     "type": "extent",
@@ -362,10 +374,6 @@
                         "signal": "yField"
                     },
                     "signal": "yext"
-                },
-                {
-                    "type": "filter",
-                    "expr": "datum[xField] != null && datum['Miles_per_Gallon'] != null && datum['Origin'] != null"
                 }
             ]
         },
@@ -397,13 +405,43 @@
             "transform": [
                 {
                     "type": "filter",
-                    "expr": "datum[xField] == 0 && datum[yField] == 0"
+                    "expr": "datum[xField] == null && datum[yField] == null"
                 },
                 {
                     "type": "aggregate"
                 }
             ]
         },
+        {
+            "name": "valid",
+            "source": "source",
+            "transform": [
+              {
+                "type": "filter",
+                "expr": "datum[xField] != null && datum[yField] != null"
+              }
+            ]
+          },
+          {
+            "name": "nullY",
+            "source": "source",
+            "transform": [
+              {
+                "type": "filter",
+                "expr": "datum[xField] != null && datum[yField] == null"
+              }
+            ]
+          },
+          {
+            "name": "nullX",
+            "source": "source",
+            "transform": [
+              {
+                "type": "filter",
+                "expr": "datum[xField] == null && datum[yField] != null"
+              }
+            ]
+          },
         {
             "name": "trend",
             "source": "source",
@@ -445,9 +483,7 @@
             "domain": {
                 "signal": "xdom"
             },
-            "range": {
-                "signal": "_xrange"
-            }
+             "range":  [{"signal": "nullGap"}, {"signal": "width"}]
         },
         {
             "name": "y",
@@ -458,9 +494,7 @@
             "domain": {
                 "signal": "ydom"
             },
-            "range": {
-                "signal": "_yrange"
-            }
+            "range": [{"signal": "height - nullGap"}, 0]
         },
         {
             "name": "color",
@@ -557,26 +591,22 @@
             },
             "axes": [
                 {
-                    "scale": "x",
-                    "grid": true,
-                    "domain": false,
                     "orient": "bottom",
-                    "tickCount": 5,
-                    "title": {
-                        "signal": "xField"
-                    },
+                     "grid": true,
+                      "scale": "x",
+                       "format": "s",
+                       "titlePadding": 5,
+                    "title": {"signal": "xField"},
                     "titleFont": "open sans",
                     "labelFont": "open sans"
                 },
                 {
-                    "scale": "y",
-                    "grid": true,
-                    "domain": false,
-                    "orient": "left",
+                    "orient": "left", 
                     "titlePadding": 5,
-                    "title": {
-                        "signal": "yField"
-                    },
+                    "grid": true, 
+                    "scale": "y", 
+                    "format": "s",
+                      "title": {"signal": "yField"},
                     "titleFont": "open sans",
                     "labelFont": "open sans"
                 }
@@ -591,7 +621,7 @@
                     ],
                     "clip": true,
                     "from": {
-                        "data": "facet"
+                        "data": "valid"
                     },
                     "encode": {
                         "enter": {
@@ -674,6 +704,50 @@
                         }
                     }
                 },
+                {
+                    "type": "symbol",
+                    "from": {"data": "nullY"},
+                    "clip": true,
+                    "encode": {
+                      "enter": {
+                        "size": {"value": 50},
+                        "tooltip": {"field": "tooltip"}
+                      },
+                      "update": {
+                        "x": {"scale": "x", "field": {"signal": "xField"}},
+                        "y": {"signal": "height - nullSize/2"},
+                        "fill": {"value": "#aaa"},
+                        "fillOpacity": {"value": 1}
+                      },
+                      "hover": {
+                        "fill": {"value": "firebrick"},
+                        "fillOpacity": {"value": 1}
+                      }
+                    }
+                  },
+                  {
+                    "type": "symbol",
+                    "from": {"data": "nullX"},
+                    "clip": true,
+                    "encode": {
+                      "enter": {
+                        "size": {"value": 50},
+                        "tooltip": {"field": "tooltip"}
+                      },
+                      "update": {
+                        "x": {"signal": "nullSize/2"},
+                        "y": {"scale": "y", "field": {"signal": "yField"}},
+                        "fill": {"value": "#aaa"},
+                        "fillOpacity": {"value": 1},
+                        "zindex": {"value": 0}
+                      },
+                      "hover": {
+                        "fill": {"value": "firebrick"},
+                        "fillOpacity": {"value": 1},
+                        "zindex": {"value": 1}
+                      }
+                    }
+                  },
                 {
                     "$comment": "This mark is used to draw connected lines across the marks ",
                     "type": "line",
@@ -970,32 +1044,13 @@
             },
             "encode": {
                 "update": {
-                    "x": {
-                        "value": 0,
-                        "offset": 50
-                    },
-                    "y": {
-                        "signal": "height + 80",
-                        "offset": 0
-                    },
-                    "text": {
-                        "signal": "datum.count + ' null values'"
-                    },
-                    "align": {
-                        "value": "center"
-                    },
-                    "baseline": {
-                        "value": "bottom"
-                    },
-                    "fill": {
-                        "value": "#999"
-                    },
-                    "fontSize": {
-                        "value": 14
-                    },
-                    "font":{
-                        "value": "open sans"
-                    }
+                    "x": {"signal": "nullSize", "offset": -4},
+                    "y": {"signal": "height", "offset": 13},
+                    "text": {"signal": "datum.count + ' null'"},
+                    "align": {"value": "right"},
+                    "baseline": {"value": "top"},
+                    "fill": {"value": "#999"},
+                    "fontSize": {"value": 9}
                 }
             }
         }

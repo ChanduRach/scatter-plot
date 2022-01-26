@@ -1,26 +1,26 @@
 [
    {
        "Name":"chevrolet chevelle malibu",
-       "Miles_per_Gallon":0,
+       "Miles_per_Gallon":null,
        "Cylinders":0,
        "Displacement":0,
-       "Horsepower":0,
+       "Horsepower":null,
        "Weight_in_lbs":3504,
        "Acceleration":12,
        "Year":"1970-01-01",
-       "Origin":"INDIA",
+       "Origin":"USA",
        "facet":"World"
     },
     {
        "Name":"chevrolet chevelle malibu",
-       "Miles_per_Gallon":0,
+       "Miles_per_Gallon":null,
        "Cylinders":0,
        "Displacement":0,
-       "Horsepower":0,
+       "Horsepower":null,
        "Weight_in_lbs":3504,
        "Acceleration":12,
        "Year":"1970-01-01",
-       "Origin":"INDIA",
+       "Origin":"USA",
        "facet":"World"
     },
     {
@@ -28,11 +28,11 @@
        "Miles_per_Gallon":18,
        "Cylinders":8,
        "Displacement":307,
-       "Horsepower":130,
+       "Horsepower":null,
        "Weight_in_lbs":3504,
        "Acceleration":12,
        "Year":"1970-01-01",
-       "Origin":"INDIA",
+       "Origin":"USA",
        "facet":"World"
     },
     {
@@ -40,11 +40,11 @@
        "Miles_per_Gallon":15,
        "Cylinders":8,
        "Displacement":350,
-       "Horsepower":165,
+       "Horsepower":null,
        "Weight_in_lbs":3693,
        "Acceleration":11.5,
        "Year":"1970-01-01",
-       "Origin":"INDIA",
+       "Origin":"USA",
        "facet":"World"
     },
    {
@@ -52,7 +52,7 @@
       "Miles_per_Gallon":23,
       "Cylinders":4,
       "Displacement":122,
-      "Horsepower":86,
+      "Horsepower":null,
       "Weight_in_lbs":2220,
       "Acceleration":14,
       "Year":"1971-01-01",
@@ -61,7 +61,7 @@
    },
    {
       "Name":"opel 1900",
-      "Miles_per_Gallon":28,
+      "Miles_per_Gallon":null,
       "Cylinders":4,
       "Displacement":116,
       "Horsepower":90,
@@ -73,7 +73,7 @@
    },
    {
       "Name":"peugeot 304",
-      "Miles_per_Gallon":30,
+      "Miles_per_Gallon":null,
       "Cylinders":4,
       "Displacement":79,
       "Horsepower":70,
@@ -85,7 +85,7 @@
    },
    {
       "Name":"fiat 124b",
-      "Miles_per_Gallon":30,
+      "Miles_per_Gallon":null,
       "Cylinders":4,
       "Displacement":88,
       "Horsepower":76,
@@ -97,7 +97,7 @@
    },
    {
       "Name":"toyota corolla 1200",
-      "Miles_per_Gallon":31,
+      "Miles_per_Gallon":null,
       "Cylinders":4,
       "Displacement":71,
       "Horsepower":65,
@@ -109,10 +109,10 @@
    },
    {
       "Name":"datsun 1200",
-      "Miles_per_Gallon":35,
+      "Miles_per_Gallon":null,
       "Cylinders":4,
       "Displacement":72,
-      "Horsepower":69,
+      "Horsepower":null,
       "Weight_in_lbs":1613,
       "Acceleration":18,
       "Year":"1971-01-01",
