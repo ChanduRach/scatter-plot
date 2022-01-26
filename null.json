@@ -25,7 +25,7 @@
     },
     {
        "Name":"chevrolet chevelle malibu",
-       "Miles_per_Gallon":18,
+       "Miles_per_Gallon":null,
        "Cylinders":8,
        "Displacement":307,
        "Horsepower":130,
@@ -37,7 +37,7 @@
     },
     {
        "Name":"buick skylark 320",
-       "Miles_per_Gallon":15,
+       "Miles_per_Gallon":null,
        "Cylinders":8,
        "Displacement":350,
        "Horsepower":165,
@@ -49,7 +49,7 @@
     },
    {
       "Name":"mercury capri 2000",
-      "Miles_per_Gallon":23,
+      "Miles_per_Gallon":null,
       "Cylinders":4,
       "Displacement":122,
       "Horsepower":86,
@@ -61,10 +61,10 @@
    },
    {
       "Name":"opel 1900",
-      "Miles_per_Gallon":28,
+      "Miles_per_Gallon":null,
       "Cylinders":4,
       "Displacement":116,
-      "Horsepower":90,
+      "Horsepower":null,
       "Weight_in_lbs":2123,
       "Acceleration":14,
       "Year":"1971-01-01",
