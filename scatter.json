@@ -370,7 +370,7 @@
                 },
                 {
                     "type": "filter",
-                    "expr": "datum[xField] != null && datum['Miles_per_Gallon'] != null && datum['Origin'] != null"
+                    "expr": "datum[xField] != null && datum[yField] != null && datum['Origin'] != null"
                 }
             ]
         },

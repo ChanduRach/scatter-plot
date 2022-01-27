@@ -2,10 +2,24 @@
    "$schema":"https://vega.github.io/schema/vega/v5.json",
    "description":"An example of a Stacked waterfall chart for given data.",
    "background":"white",
-   "padding":5,
-   "width":900,
-   "height":450,
+   "padding":25,
+   "width":600,
+   "height":300,
    "style":"cell",
+   "uifactoryConfig": [
+      {
+        "$comment": "Configuration to make it work with uifactory",
+        "type": "mark.bar",
+        "prefix": "mark",
+        "insert": "marks[0].encode.enter"
+      },
+      {
+        "$comment": "Configuration to pass custom signals for the specs",
+        "type": "custom",
+        "attr": "markTooltip",
+        "insert": "marks[0].encode.update.tooltip.signal"
+      }
+    ],
    "data":[
       {
          "name":"legend_opacity_store"
@@ -175,6 +189,7 @@
             }
          ]
       },
+    
       {
          "name":"legend_opacity_category_legend",
          "value":null,
@@ -285,9 +300,18 @@
         "name":"markLineStrokeColor",
         "value":"black"
      },
-     
      {
-        "name":"markTextColorInc",
+      "$comment": "Signal Used for padding b/w  the labels",  
+      "name":"markLabelPadding",
+      "value":5
+     },
+     {
+      "$comment": " Discuss: Whether needed or not. Column name used from database to show on tooltip.",
+      "name": "markTooltip",
+      "value": null
+    },
+     {
+        "name":"markTextColor",
         "value":"white"
      },
      {
@@ -334,8 +358,9 @@
                      "value":0.2
                   }
                ],
-               "tooltip":{
-                   "signal":"{\"Month\": isValid(datum[\"label\"]) ? datum[\"label\"] : \"\"+datum[\"label\"], \"Begin Amount\": isValid(datum[\"previous_sum\"]) ? datum[\"previous_sum\"] : \"\"+datum[\"previous_sum\"], \"End Amount\": format(datum[\"sum\"], \"\"), \"Diff Amount\": format(datum[\"amount\"], \"\")}"
+               
+               "tooltip": {
+                  "signal": "markTooltip"
                 },
                "ariaRoleDescription":{
                   "value":"bar"
@@ -393,13 +418,13 @@
                "x":{
                   "scale":"x",
                   "field":"label",
-                  "offset":-22.5,
+                  "offset":-16.5,
                   "band":0.5
                },
                "x2":{
                   "scale":"x",
                   "field":"lead",
-                  "offset":22.5,
+                  "offset":16.5,
                   "band":0.5
                },
                "y":{
@@ -452,6 +477,8 @@
                      "signal":"format(datum[\"sum_total_inc\"], \"$,\")"
                   }
                ],
+               "font":{"value":"Open Sans"},
+               "fontSize":{"value":9.5},
                "align":{
                   "value":"center"
                }
@@ -501,6 +528,8 @@
                      "signal":"format(datum[\"sum_total_dec\"], \"$,\")"
                   }
                ],
+               "font":{"value":"Open Sans"},
+               "fontSize":{"value":9.5},
                "align":{
                   "value":"center"
                }
@@ -532,7 +561,7 @@
                      "signal":"markSumTextColor"
                   },
                   {
-                     "signal":"markTextColorInc"
+                     "signal":"markTextColor"
                   }
                ],
                "description":{
@@ -550,6 +579,8 @@
                "text":{
                   "signal":"format(datum[\"text_amount\"], \"$,\")"
                },
+               "font":{"value":"Open Sans"},
+               "fontSize":{"value":7.5},
                "align":{
                   "value":"center"
                }
@@ -666,6 +697,7 @@
             "signal":"ceil(height/40)"
          },
          "domain":false,
+         "domainColor":"black",
          "labels":false,
          "aria":false,
          "maxExtent":0,
@@ -676,8 +708,12 @@
       { "$comment": "mark for x-axis ",
          "scale":"x",
          "orient":"bottom",
+         "domainColor":"black",
          "grid":false,
          "title":{"signal":"markXaxisTitle"},
+         "titlePadding":{
+            "signal":"markLabelPadding"
+         },
          "labelAngle":0,
          "labelLimit":{"signal":"markLabelLimit"},
          "labelBaseline":"top",
@@ -687,7 +723,11 @@
          "scale":"y",
          "orient":"left",
          "grid":false,
+         "domainColor":"black",
          "title":{"signal":"markYaxisTitle"},
+         "titlePadding":{
+            "signal":"markLabelPadding"
+         },
          "format":"$,f",
          "formatType":"number",
          "labelOverlap":true,
@@ -701,7 +741,9 @@
       {
         "$comment": "Mark for the Legend",
          "fill":"color",
-         "symbolType":"square",
+         "symbolType":"circle",
+         "direction": "horizontal",
+         
          "title":"Category",
          "encode":{
             "labels":{
@@ -756,7 +798,8 @@
       },
       "legend":{
          "labelFont":"Open Sans",
-         "titleFont":"Open Sans"
+         "titleFont":"Open Sans",
+         "orient":"bottom"
       },
       "style":{
          "cell":{

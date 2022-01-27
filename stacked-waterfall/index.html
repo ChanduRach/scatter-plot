@@ -30,19 +30,35 @@
 
 <h4> Stacked waterfall chart</h4>
 <p> In a stacked Waterfall chart, data series are stacked one on top of the other in vertical columns. Stacked column charts can show change over time because it's easy to compare total column lengths. </p>
- <vega-chart spec="stacked-waterfall.json"
- mark-bar-width:number=45
+<vega-chart spec="stacked-waterfall.json"
+
+ mark-bar-width:number=32
+
  mark-label-limit:number=50
+
  mark-xaxis-title:string="Months"
+
  mark-yaxis-title:string="Amount"
- mark-sum-text-color:string="#404040" 
+
+ mark-sum-text-color:string="#404040"
+
  mark-begin-end-fill:string=#B3B3B3
+
  mark-line-stroke-color:string=#000000
- mark-text-color-inc:string=#FFFFFF
+
+ mark-text-color:string=#FFFFFF
+
+ mark-label-padding:number=20
+
  mark-line-stroke-width:number=1
- mark-bar-radius:number=2 
+
+ mark-bar-radius:number=2
+
+ mark-tooltip:string="{'Month': datum.label, 'Begin Amount': datum.previous_sum,'End Amount': datum.sum,'Diff Amount':datum.amount}"
+
  >
-</vega-chart> 
+
+</vega-chart>
 <script src="../color-scheme.js"></script>
 </body>
 </html>

@@ -35,28 +35,53 @@ becomes a final value (such as the balance in the account at the end
 of the month) through a series of intermediate additions (deposits,
 transfers in) and subtractions </p>
 <vega-chart spec="waterfall.json"
-    mark-bar-width:number=45
+
+    mark-bar-width:number=30
+
     mark-bar-fill:string="waterfall-scheme4"
+
     mark-intermediate-bar-fill:string="#2A71A4"
+
     mark-begin-end-fill:string=#B3B3B3
-    mark-line-stroke-color:string=#dddddd
+
+    mark-line-stroke-color:string=#000000
+
     mark-text-color-dec:string=#FFFFFF
+
     mark-text-color-inc:string=#FFFFFF
+
     mark-xaxis-domain-color:string=black
+
     mark-yaxis-domain-color:string=black
+
     mark-line-stroke-width:number=1
+
     mark-stroke-opacity:number=1
+
     mark-bar-radius:number=2
+
     mark-label-font-size:number=12
+
     mark-stroke-dash:number=[1,0]
-    mark-label-anchor:string=middle
+
     mark-label-angle:number=0
-    mark-label-color:string=#666666
+
+    mark-label-padding:number=20
+
+    mark-label-color:string=#000000
+
     mark-reference-line:number=2000
+
     mark-label-limit:number=50
+
     mark-xaxis-title:string="Months"
+
     mark-yaxis-title:string="Amount"
+
     mark-sum-text-color:string="#404040"
+
+    mark-tooltip:string="{'Month': datum.label, 'Begin Amount': datum.previous_sum,'End Amount': datum.sum,'Diff Amount':datum.amount}"
+
 >
 </vega-chart>
 
